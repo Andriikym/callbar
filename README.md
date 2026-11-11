@@ -32,10 +32,22 @@ You can open Package.swift in Xcode. To run the menu bar app, use the built Call
 
 GitHub Actions checks the project on macOS, builds a universal .app for Apple Silicon and Intel, and saves an archive as a workflow artifact. On Linux, only the independent CallBarCore module and its tests are available.
 
+## Try the packaged MVP
+
+The MVP candidate has passed 15 automated tests and universal bundle verification. The actual UI and a call through iPhone still need hands-on acceptance.
+
+1. Open the successful build linked in the [verification record](docs/verification.md).
+2. Download the CallBar-macOS-universal artifact. GitHub may require you to sign in.
+3. Extract the downloaded artifact, then extract the enclosed CallBar-macOS-universal.zip.
+4. Open CallBar.app and use the phone icon in the menu bar.
+
+The archive contains a development build with an ad hoc signature, not a notarized distribution build. If macOS blocks it, use the source-build instructions above or review the app in System Settings → Privacy & Security. CI artifacts are retained for 14 days; build from source or rerun the workflow after they expire.
+
 ## Documentation
 
 - [Implementation plan and future releases](docs/implementation-plan.md)
 - [Architecture and technical decisions](docs/architecture.md)
 - [Manual testing on a real Mac and iPhone](docs/manual-testing.md)
+- [Verified build and current checkpoint](docs/verification.md)
 
 Numbers stay in the current process's memory. The MVP does not store call history, send analytics, or request access to Contacts.

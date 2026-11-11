@@ -2,6 +2,8 @@
 
 Date: 2026-11-10. Working name: CallBar. Repository: Andriikym/callbar.
 
+Last reviewed: 2026-11-11. The English UI and documentation are retained from the rewritten repository history. Development continues from its new initial commit.
+
 ## v0.1 goal
 
 The user opens CallBar from the menu bar, pastes a number that is not in Contacts, and starts a regular call through the configured Mac + iPhone setup.
@@ -15,34 +17,40 @@ The first release is limited to four features: menu bar access, manual entry and
 - [x] Connect the empty remote repository.
 - [x] Add this plan, the architecture, and manual test scenarios.
 - [x] Choose Swift 5.9+, macOS 13+, Swift Package Manager, SwiftUI + AppKit.
-- [ ] Configure macOS CI and a reproducible .app build.
+- [x] Configure macOS CI and a reproducible .app build.
 
 ### 2. Independent core
 
-- [ ] PhoneNumber: remove allowed formatting while preserving a leading plus sign and zeros.
-- [ ] Reject ambiguous or unsupported input without silently changing the number.
-- [ ] CallRequest: build a phone link only from a validated number.
-- [ ] DialCall + CallLaunching: separate the user flow from the system API.
-- [ ] Test formatting, edge cases, and request handoff.
+- [x] PhoneNumber: remove allowed formatting while preserving a leading plus sign and zeros.
+- [x] Reject ambiguous or unsupported input without silently changing the number.
+- [x] CallRequest: build a phone link only from a validated number.
+- [x] DialCall + CallLaunching: separate the user flow from the system API.
+- [x] Test formatting, edge cases, and request handoff.
 
 ### 3. macOS app
 
-- [ ] AppDelegate and StatusBarController: icon, popover, dismissal, and app termination.
-- [ ] SwiftUI popover: field, number preview, errors, call button, Enter, and Esc.
-- [ ] Automatically focus the field when the popover opens.
-- [ ] SystemCallLauncher: check for a handler and open tel: through NSWorkspace.
-- [ ] Clearly report request handoff; never invent a call status.
-- [ ] Add setup guidance for Mac + iPhone.
-- [ ] Test view model behavior, including repeat clicks during handoff.
+- [x] AppDelegate and StatusBarController: icon, popover, dismissal, and app termination.
+- [x] SwiftUI popover: field, number preview, errors, call button, Enter, and Esc.
+- [x] Automatically focus the field when the popover opens.
+- [x] SystemCallLauncher: check for a handler and open tel: through NSWorkspace.
+- [x] Clearly report request handoff; never invent a call status.
+- [x] Add setup guidance for Mac + iPhone.
+- [x] Test view model behavior, including repeat clicks during handoff.
 
 ### 4. Verification and packaging
 
-- [ ] macOS CI: swift test, release build, create and verify the bundle.
-- [ ] Save the .app archive as a GitHub Actions artifact.
+- [x] macOS CI: swift test, release build, create and verify the bundle.
+- [x] Save the .app archive as a GitHub Actions artifact.
 - [ ] Run the scenarios in manual-testing.md on a real Mac + iPhone.
 - [ ] Record macOS/iOS versions and hands-on results.
 
-Builds and unit tests confirm that the code works, but do not replace checks of Continuity and system dialogs on real devices. Until those checks are complete, v0.1 is an MVP candidate.
+Completed implementation tasks mean the code is present. Builds and unit tests verify compilation and the tested behavior, but do not replace checks of the UI, Continuity, and system dialogs on real devices. Until those checks are complete, v0.1 is an MVP candidate.
+
+## Current checkpoint
+
+The implementation and automated packaging are complete. All 15 tests pass, and the universal arm64 + x86_64 app has passed bundle and ad hoc signature verification. See the [verification record](verification.md) for the tested commit, CI run, and downloadable artifact.
+
+Next: run the [Mac + iPhone acceptance scenarios](manual-testing.md), record the device versions and results, and fix any confirmed issues before moving to v0.2.
 
 ## First hands-on check on Mac
 
