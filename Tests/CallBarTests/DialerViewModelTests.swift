@@ -120,6 +120,108 @@ final class DialerViewModelTests: XCTestCase {
     }
 
     @MainActor
+    func testEditingAndPresentingNeverStartACall() async {
+        let launcher = ControllableLauncher()
+        let model = makeModel(launcher: launcher)
+
+        model.prepareForPresentation()
+        model.rawNumber = "+1 (202) 555-0147"
+        model.prepareForPresentation()
+        model.rawNumber = "invalid"
+        model.rawNumber = "2025550148"
+
+        XCTAssertTrue(launcher.requests.isEmpty)
+        XCTAssertFalse(model.isOpening)
+        XCTAssertTrue(model.canCall)
+        XCTAssertNil(model.notice)
+    }
+
+    @MainActor
+    func testEditingAfterSuccessClearsTheNoticeAndRevalidates() async {
+        let launcher = ControllableLauncher()
+        let model = makeModel(launcher: launcher)
+        model.rawNumber = "2025550147"
+        await model.call()
+        XCTAssertEqual(model.notice?.kind, .information)
+
+        model.rawNumber = "12"
+        XCTAssertNil(model.notice)
+        XCTAssertNil(model.normalizedNumber)
+        XCTAssertNotNil(model.validationMessage)
+        XCTAssertFalse(model.canCall)
+
+        model.rawNumber = " \t\n"
+        XCTAssertNil(model.validationMessage)
+        XCTAssertFalse(model.canCall)
+
+        model.rawNumber = "020 7946 0958"
+        XCTAssertNil(model.validationMessage)
+        XCTAssertEqual(model.normalizedNumber, "02079460958")
+        XCTAssertTrue(model.canCall)
+        XCTAssertEqual(launcher.requests.count, 1)
+    }
+
+    @MainActor
+    func testEachSystemFailureCanBeRetriedWithoutEditingTheNumber() async {
+        for failure in [CallLaunchError.noHandler, .openFailed] {
+            let launcher = ControllableLauncher()
+            launcher.failure = failure
+            let model = makeModel(launcher: launcher)
+            model.rawNumber = "2025550147"
+
+            await model.call()
+            XCTAssertEqual(model.notice?.kind, .error)
+            XCTAssertEqual(model.notice?.message, failure.localizedDescription)
+            XCTAssertFalse(model.isOpening)
+            XCTAssertTrue(model.canCall)
+
+            launcher.failure = nil
+            await model.call()
+            XCTAssertEqual(model.notice?.kind, .information)
+            XCTAssertFalse(model.isOpening)
+            XCTAssertEqual(launcher.requests.count, 2)
+            XCTAssertEqual(launcher.requests.first, launcher.requests.last)
+        }
+    }
+
+    @MainActor
+    func testReopeningDuringHandoffKeepsDuplicateProtectionUntilFailure() async {
+        let entered = expectation(description: "System adapter entered")
+        let launcher = ControllableLauncher()
+        launcher.shouldWait = true
+        launcher.failure = .openFailed
+        launcher.onOpen = { entered.fulfill() }
+        let model = makeModel(launcher: launcher)
+        model.rawNumber = "2025550147"
+
+        let first = Task { await model.call() }
+        await fulfillment(of: [entered], timeout: 2)
+        let previousPresentation = model.presentationID
+
+        model.prepareForPresentation()
+        XCTAssertGreaterThan(model.presentationID, previousPresentation)
+        XCTAssertEqual(model.rawNumber, "2025550147")
+        XCTAssertTrue(model.isOpening)
+        XCTAssertFalse(model.canCall)
+        XCTAssertNil(model.notice)
+        await model.call()
+        XCTAssertEqual(launcher.requests.count, 1)
+
+        launcher.finish()
+        await first.value
+        XCTAssertEqual(model.notice?.kind, .error)
+        XCTAssertFalse(model.isOpening)
+        XCTAssertTrue(model.canCall)
+
+        launcher.shouldWait = false
+        launcher.failure = nil
+        launcher.onOpen = nil
+        await model.call()
+        XCTAssertEqual(model.notice?.kind, .information)
+        XCTAssertEqual(launcher.requests.count, 2)
+    }
+
+    @MainActor
     private func makeModel(launcher: ControllableLauncher? = nil) -> DialerViewModel {
         DialerViewModel(dialCall: DialCall(launcher: launcher ?? ControllableLauncher()))
     }
