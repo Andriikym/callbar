@@ -21,7 +21,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Check out sources
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Show toolchain
         run: swift --version
       - name: Test the platform-independent core
@@ -33,7 +33,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Check out sources
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Show toolchain
         run: |
           xcodebuild -version
@@ -49,14 +49,14 @@ jobs:
       - name: Build and verify Intel app
         run: ./scripts/build-app.sh x86_64
       - name: Save Apple Silicon archive
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: CallBar-macOS-arm64
           path: dist/CallBar-macOS-arm64.zip
           if-no-files-found: error
           retention-days: 14
       - name: Save Intel archive
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: CallBar-macOS-x86_64
           path: dist/CallBar-macOS-x86_64.zip
