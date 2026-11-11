@@ -36,7 +36,7 @@ GitHub Actions runs the Swift tests on Apple Silicon, then builds, verifies, and
 
 The actual UI and a call through iPhone still need hands-on acceptance.
 
-1. Open a successful run of the [macOS build and tests workflow](https://github.com/Andriikym/callbar/actions/workflows/ci.yml).
+1. Open a successful run of the [CI workflow](https://github.com/Andriikym/callbar/actions/workflows/ci.yml).
 2. Download the `CallBar-macOS-arm64` artifact for Apple Silicon or `CallBar-macOS-x86_64` for Intel. GitHub may require you to sign in.
 3. Extract the downloaded artifact, then extract the enclosed ZIP.
 4. Open CallBar.app and use the phone icon in the menu bar.
@@ -47,6 +47,7 @@ The archive contains a development build with an ad hoc signature, not a notariz
 
 - [Implementation plan and future releases](docs/implementation-plan.md)
 - [Architecture and technical decisions](docs/architecture.md)
+- [Pull request checks and Codex review setup](docs/pull-request-checks.md)
 - [Manual testing on a real Mac and iPhone](docs/manual-testing.md)
 - [Verified build and current checkpoint](docs/verification.md)
 

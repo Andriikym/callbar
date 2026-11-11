@@ -1,4 +1,4 @@
-name: macOS build and tests
+name: CI
 
 on:
   push:
@@ -10,10 +10,23 @@ permissions:
   contents: read
 
 concurrency:
-  group: macos-${{ github.ref }}
+  group: ci-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
+  core:
+    name: Core tests (Swift 5.9, Linux)
+    runs-on: ubuntu-22.04
+    container: swift:5.9.2-jammy
+    timeout-minutes: 10
+    steps:
+      - name: Check out sources
+        uses: actions/checkout@v4
+      - name: Show toolchain
+        run: swift --version
+      - name: Test the platform-independent core
+        run: swift test --parallel
+
   macos:
     name: Test on Apple Silicon and package macOS apps
     runs-on: macos-15
@@ -49,3 +62,18 @@ jobs:
           path: dist/CallBar-macOS-x86_64.zip
           if-no-files-found: error
           retention-days: 14
+
+  required:
+    name: PR checks
+    if: ${{ always() }}
+    needs: [core, macos]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Require both test suites and macOS packaging to pass
+        env:
+          CORE_RESULT: ${{ needs.core.result }}
+          MACOS_RESULT: ${{ needs.macos.result }}
+        run: |
+          test "$CORE_RESULT" = success
+          test "$MACOS_RESULT" = success

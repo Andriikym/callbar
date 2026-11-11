@@ -16,6 +16,24 @@ final class DialCallTests: XCTestCase {
         XCTAssertEqual(request.url.absoluteString, "tel:02079460958")
     }
 
+    func testRequestRejectsInvalidInputBeforeConstructingAURL() {
+        let cases: [(String, PhoneNumberError)] = [
+            ("", .empty),
+            ("12", .tooShort),
+            ("1234567890123456", .tooLong),
+            ("12+3456", .misplacedPlus),
+            ("123?body=456", .unsupportedCharacters),
+            ("%2B123456", .unsupportedCharacters),
+            ("123\n456", .unsupportedCharacters)
+        ]
+
+        for (input, expected) in cases {
+            XCTAssertThrowsError(try CallRequest(rawNumber: input)) { error in
+                XCTAssertEqual(error as? PhoneNumberError, expected)
+            }
+        }
+    }
+
     @MainActor
     func testValidInputIsHandedOffOnce() async throws {
         let launcher = RecordingLauncher()
@@ -28,11 +46,22 @@ final class DialCallTests: XCTestCase {
     @MainActor
     func testInvalidInputNeverReachesTheOperatingSystem() async {
         let launcher = RecordingLauncher()
-        do {
-            try await DialCall(launcher: launcher).start(rawNumber: "tel:123")
-            XCTFail("Invalid input must not be handed off")
-        } catch {
-            XCTAssertEqual(error as? PhoneNumberError, .unsupportedCharacters)
+        let cases: [(String, PhoneNumberError)] = [
+            ("", .empty),
+            ("12", .tooShort),
+            ("1234567890123456", .tooLong),
+            ("++123", .misplacedPlus),
+            ("tel:123", .unsupportedCharacters),
+            ("123\n456", .unsupportedCharacters)
+        ]
+
+        for (input, expected) in cases {
+            do {
+                try await DialCall(launcher: launcher).start(rawNumber: input)
+                XCTFail("Invalid input must not be handed off")
+            } catch {
+                XCTAssertEqual(error as? PhoneNumberError, expected)
+            }
         }
         XCTAssertTrue(launcher.requests.isEmpty)
     }

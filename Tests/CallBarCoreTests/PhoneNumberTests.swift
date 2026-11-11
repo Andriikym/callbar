@@ -55,6 +55,55 @@ final class PhoneNumberTests: XCTestCase {
         }
     }
 
+    func testDigitLimitsCountDigitsRatherThanFormattingOrPlus() throws {
+        for prefix in ["", "+"] {
+            for count in [3, 15] {
+                let digits = String(repeating: "0", count: count)
+                let formatted = prefix + digits.map { "(\($0))" }.joined(separator: " - ")
+                XCTAssertEqual(try PhoneNumber(formatted).canonical, prefix + digits)
+            }
+
+            assertInvalid(prefix + "(0) - (0)", .tooShort)
+            assertInvalid(prefix + String(repeating: "(0) - ", count: 16), .tooLong)
+        }
+    }
+
+    func testAcceptsDocumentedHorizontalSpacesAndDashes() throws {
+        let separators = [
+            " ", "\t", "\u{00A0}", "\u{1680}", "\u{2000}", "\u{2001}",
+            "\u{2002}", "\u{2003}", "\u{2004}", "\u{2005}", "\u{2006}",
+            "\u{2007}", "\u{2008}", "\u{2009}", "\u{200A}", "\u{202F}",
+            "\u{205F}", "\u{3000}", "-", "\u{2010}", "\u{2011}",
+            "\u{2012}", "\u{2013}", "\u{2014}"
+        ]
+
+        for separator in separators {
+            let input = "+000\(separator)123\(separator)456"
+            XCTAssertEqual(try PhoneNumber(input).canonical, "+000123456", input.debugDescription)
+        }
+    }
+
+    func testRejectsEveryInternalLineSeparator() {
+        for separator in ["\n", "\r", "\r\n", "\u{000B}", "\u{000C}", "\u{0085}", "\u{2028}", "\u{2029}"] {
+            assertInvalid("123\(separator)456", .unsupportedCharacters)
+        }
+    }
+
+    func testRejectsControlsInvisibleCharactersAndURLSyntaxAtAnyPosition() {
+        let forbidden = [
+            "\u{0000}", "\u{001B}", "\u{007F}", "\u{200B}", "\u{200C}",
+            "\u{200D}", "\u{202E}", "\u{2066}", "\u{FEFF}",
+            "%", ":", "/", "?", "#", "@", "&", "=", ",", ";", "*", ".",
+            "１", "١", "A"
+        ]
+
+        for character in forbidden {
+            for input in ["\(character)123456", "123\(character)456", "123456\(character)"] {
+                assertInvalid(input, .unsupportedCharacters)
+            }
+        }
+    }
+
     private func assertInvalid(
         _ input: String,
         _ expected: PhoneNumberError,
