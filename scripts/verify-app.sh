@@ -17,6 +17,6 @@ test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$info_path")" = 
 test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$info_path")" = "com.andriikym.callbar"
 test "$(/usr/libexec/PlistBuddy -c 'Print :LSUIElement' "$info_path")" = "true"
 test "$(/usr/libexec/PlistBuddy -c 'Print :LSMinimumSystemVersion' "$info_path")" = "13.0"
-/usr/bin/lipo -verify_arch arm64 x86_64 "$executable"
+/usr/bin/lipo "$executable" -verify_arch arm64 x86_64
 /usr/bin/codesign --verify --deep --strict "$app_path"
 printf '%s\n' 'Validated universal menu bar app bundle.'
