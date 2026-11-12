@@ -50,6 +50,10 @@ final class DialerViewModel: ObservableObject {
         }
     }
 
+    func clearNumber() {
+        rawNumber = ""
+    }
+
     func prepareForPresentation() {
         notice = nil
         presentationID += 1
