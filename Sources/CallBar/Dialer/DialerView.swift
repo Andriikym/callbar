@@ -47,14 +47,27 @@ struct DialerView: View {
 
             VStack(alignment: .leading, spacing: 8) {
                 Text("Phone number").font(.headline)
-                TextField("Type or paste a number", text: $model.rawNumber)
-                    .textFieldStyle(.roundedBorder)
-                    .font(.title3.monospacedDigit())
-                    .focused($isNumberFocused)
-                    .disabled(model.isOpening)
-                    .accessibilityLabel("Phone number")
-                    .accessibilityHint("Paste or type a number. Press Enter to start a call.")
-                    .onSubmit { submit() }
+                HStack(spacing: 6) {
+                    TextField("Type or paste a number", text: $model.rawNumber)
+                        .textFieldStyle(.roundedBorder)
+                        .font(.title3.monospacedDigit())
+                        .focused($isNumberFocused)
+                        .accessibilityLabel("Phone number")
+                        .accessibilityHint("Paste or type a number. Press Enter to start a call.")
+                        .onSubmit { submit() }
+
+                    Button {
+                        model.clearNumber()
+                        focusNumber()
+                    } label: {
+                        Label("Clear phone number", systemImage: "xmark.circle.fill")
+                            .labelStyle(.iconOnly)
+                    }
+                    .buttonStyle(.bordered)
+                    .help("Clear phone number")
+                    .disabled(model.rawNumber.isEmpty)
+                }
+                .disabled(model.isOpening)
 
                 if let message = model.validationMessage {
                     Text(message)

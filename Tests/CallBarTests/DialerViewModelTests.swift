@@ -19,6 +19,23 @@ final class DialerViewModelTests: XCTestCase {
     }
 
     @MainActor
+    func testClearingNumberResetsDialerAfterHandoff() async {
+        let model = makeModel()
+        model.rawNumber = "+1 (202) 555-0147"
+        await model.call()
+        XCTAssertNotNil(model.notice)
+        XCTAssertTrue(model.canCall)
+
+        model.clearNumber()
+
+        XCTAssertTrue(model.rawNumber.isEmpty)
+        XCTAssertNil(model.normalizedNumber)
+        XCTAssertNil(model.validationMessage)
+        XCTAssertNil(model.notice)
+        XCTAssertFalse(model.canCall)
+    }
+
+    @MainActor
     func testSuccessfulHandoffProducesInformationAndAllowsAnotherAttempt() async {
         let launcher = ControllableLauncher()
         let model = makeModel(launcher: launcher)
