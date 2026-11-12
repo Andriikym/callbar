@@ -15,7 +15,7 @@ CallBar sends the number to the phone link handler registered with macOS. macOS 
 ## Requirements
 
 - macOS 13 or later.
-- For development and universal builds: Xcode 15+ with Swift 5.9+.
+- For development and packaging: Xcode 15+ with Swift 5.9+.
 - For regular calls: iPhone with Calls on Other Devices configured. Confirm it works in a system app before testing CallBar.
 
 ## Build and run
@@ -25,20 +25,20 @@ git clone https://github.com/Andriikym/callbar.git
 cd callbar
 swift test
 ./scripts/build-app.sh
-open dist/CallBar.app
+open "dist/$(uname -m)/CallBar.app"
 ~~~
 
 You can open Package.swift in Xcode. To run the menu bar app, use the built CallBar.app bundle. The script applies a local ad hoc signature; public distribution with Developer ID and notarization is a separate step.
 
-GitHub Actions checks the project on macOS, builds a universal .app for Apple Silicon and Intel, and saves an archive as a workflow artifact. On Linux, only the independent CallBarCore module and its tests are available.
+GitHub Actions runs the Swift tests on Apple Silicon, then builds, verifies, and uploads separate Apple Silicon and Intel ZIPs. To build for a specific architecture locally, pass `arm64` or `x86_64` to `./scripts/build-app.sh`. On Linux, only the independent CallBarCore module and its tests are available.
 
 ## Try the packaged MVP
 
-The MVP candidate has passed 15 automated tests and universal bundle verification. The actual UI and a call through iPhone still need hands-on acceptance.
+The actual UI and a call through iPhone still need hands-on acceptance.
 
-1. Open the successful build linked in the [verification record](docs/verification.md).
-2. Download the CallBar-macOS-universal artifact. GitHub may require you to sign in.
-3. Extract the downloaded artifact, then extract the enclosed CallBar-macOS-universal.zip.
+1. Open a successful run of the [macOS build and tests workflow](https://github.com/Andriikym/callbar/actions/workflows/ci.yml).
+2. Download the `CallBar-macOS-arm64` artifact for Apple Silicon or `CallBar-macOS-x86_64` for Intel. GitHub may require you to sign in.
+3. Extract the downloaded artifact, then extract the enclosed ZIP.
 4. Open CallBar.app and use the phone icon in the menu bar.
 
 The archive contains a development build with an ad hoc signature, not a notarized distribution build. If macOS blocks it, use the source-build instructions above or review the app in System Settings → Privacy & Security. CI artifacts are retained for 14 days; build from source or rerun the workflow after they expire.

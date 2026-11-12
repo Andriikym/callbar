@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   macos:
-    name: Test and package macOS app
+    name: Test on Apple Silicon and package macOS apps
     runs-on: macos-15
     timeout-minutes: 20
     steps:
@@ -26,15 +26,26 @@ jobs:
           xcodebuild -version
           swift --version
       - name: Check shell scripts
-        run: bash -n scripts/build-app.sh scripts/verify-app.sh
+        run: |
+          bash -n scripts/build-app.sh
+          bash -n scripts/verify-app.sh
       - name: Test core and presentation
         run: swift test --parallel
-      - name: Build and verify universal app
-        run: ./scripts/build-app.sh
-      - name: Save app archive
+      - name: Build and verify Apple Silicon app
+        run: ./scripts/build-app.sh arm64
+      - name: Build and verify Intel app
+        run: ./scripts/build-app.sh x86_64
+      - name: Save Apple Silicon archive
         uses: actions/upload-artifact@v4
         with:
-          name: CallBar-macOS-universal
-          path: dist/CallBar-macOS-universal.zip
+          name: CallBar-macOS-arm64
+          path: dist/CallBar-macOS-arm64.zip
+          if-no-files-found: error
+          retention-days: 14
+      - name: Save Intel archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: CallBar-macOS-x86_64
+          path: dist/CallBar-macOS-x86_64.zip
           if-no-files-found: error
           retention-days: 14
