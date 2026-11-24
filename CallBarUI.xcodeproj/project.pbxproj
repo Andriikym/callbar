@@ -1,0 +1,485 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 60;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		38AF258E5DA0C749646371D6 /* PopoverControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB2763D8DA73B37975F0E1B7 /* PopoverControls.swift */; };
+		59105C55010AE8615ACFAB3D /* DialerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED56EE3FED354C29E306AF3C /* DialerViewModel.swift */; };
+		5D71E4856A33F27334D04360 /* SetupGuideView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B4ED3ED3723586BAC8CEB35 /* SetupGuideView.swift */; };
+		6BEF830379C5A73D974F613F /* TabActionsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DA92C24EC4E3575E3167790 /* TabActionsUITests.swift */; };
+		6EA0E5DA9B4EE5C096D6581C /* FavoriteEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76C7B926659B51FD0D6D1526 /* FavoriteEditorView.swift */; };
+		7654D4E765AA171E15454A78 /* LocalList.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA7D4559DC5C80208F64DEAC /* LocalList.swift */; };
+		76EBF64E12880D75C5FA3827 /* CallBarCore in Frameworks */ = {isa = PBXBuildFile; productRef = FDFACD77FDAF8A8CEEDDA074 /* CallBarCore */; };
+		8154EF8D4A4EF201D7EBA0E9 /* PopoverTestHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B8A69486D28359041A71DBE /* PopoverTestHost.swift */; };
+		9FFC634C19A9FC5FEADF8A6C /* MainMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1237556CB02A826ABD89DD7 /* MainMenu.swift */; };
+		F7DCD1E40DEC4722FBE2BB80 /* SavedCalls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478135C5022DBE2E91C1010B /* SavedCalls.swift */; };
+		FDC59C83369EB131BDFE88F4 /* DialerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB35494B978F31BFADF4BE79 /* DialerViewController.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		B82C40BD5AA802BF19737883 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CF552F7271246539D14737A3 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 270CB37AF429A61B2CF1DDA9;
+			remoteInfo = CallBarUITestHost;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		2B4ED3ED3723586BAC8CEB35 /* SetupGuideView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupGuideView.swift; sourceTree = "<group>"; };
+		2DA92C24EC4E3575E3167790 /* TabActionsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabActionsUITests.swift; sourceTree = "<group>"; };
+		478135C5022DBE2E91C1010B /* SavedCalls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedCalls.swift; sourceTree = "<group>"; };
+		5B8A69486D28359041A71DBE /* PopoverTestHost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoverTestHost.swift; sourceTree = "<group>"; };
+		76C7B926659B51FD0D6D1526 /* FavoriteEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteEditorView.swift; sourceTree = "<group>"; };
+		8095D65643FA42A59D560D34 /* CallBarUITestHost.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CallBarUITestHost.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BB35494B978F31BFADF4BE79 /* DialerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DialerViewController.swift; sourceTree = "<group>"; };
+		C1237556CB02A826ABD89DD7 /* MainMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMenu.swift; sourceTree = "<group>"; };
+		C12E6ACB1E4CEBCCDFEC58FE /* CallBarUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CallBarUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		C54B2FA8FA29AC9C8EA0ABE7 /* CallBar */ = {isa = PBXFileReference; lastKnownFileType = folder; name = CallBar; path = .; sourceTree = SOURCE_ROOT; };
+		CB2763D8DA73B37975F0E1B7 /* PopoverControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoverControls.swift; sourceTree = "<group>"; };
+		ED56EE3FED354C29E306AF3C /* DialerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DialerViewModel.swift; sourceTree = "<group>"; };
+		FA7D4559DC5C80208F64DEAC /* LocalList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalList.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8C0BF830412177E154C9E898 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				76EBF64E12880D75C5FA3827 /* CallBarCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		5B7E3B05ACC96D91DAAB5042 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8095D65643FA42A59D560D34 /* CallBarUITestHost.app */,
+				C12E6ACB1E4CEBCCDFEC58FE /* CallBarUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		774B8282E31DB09F4FA58CE9 /* Dialer */ = {
+			isa = PBXGroup;
+			children = (
+				BB35494B978F31BFADF4BE79 /* DialerViewController.swift */,
+				ED56EE3FED354C29E306AF3C /* DialerViewModel.swift */,
+				76C7B926659B51FD0D6D1526 /* FavoriteEditorView.swift */,
+				CB2763D8DA73B37975F0E1B7 /* PopoverControls.swift */,
+				478135C5022DBE2E91C1010B /* SavedCalls.swift */,
+				2B4ED3ED3723586BAC8CEB35 /* SetupGuideView.swift */,
+			);
+			name = Dialer;
+			path = Sources/CallBar/Dialer;
+			sourceTree = "<group>";
+		};
+		90CD8EB3D93AD274A7603240 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				C54B2FA8FA29AC9C8EA0ABE7 /* CallBar */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+		AEFFA072E36382CE49768902 /* Platform */ = {
+			isa = PBXGroup;
+			children = (
+				FA7D4559DC5C80208F64DEAC /* LocalList.swift */,
+			);
+			name = Platform;
+			path = Sources/CallBar/Platform;
+			sourceTree = "<group>";
+		};
+		C4A91434CED8499F848D9C8A /* CallBarUITestHost */ = {
+			isa = PBXGroup;
+			children = (
+				5B8A69486D28359041A71DBE /* PopoverTestHost.swift */,
+			);
+			name = CallBarUITestHost;
+			path = Tests/CallBarUITestHost;
+			sourceTree = "<group>";
+		};
+		CCEA44849FEC45DB53731C76 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				C1237556CB02A826ABD89DD7 /* MainMenu.swift */,
+			);
+			name = App;
+			path = Sources/CallBar/App;
+			sourceTree = "<group>";
+		};
+		E8A9A92A70B9AA6E7140479B = {
+			isa = PBXGroup;
+			children = (
+				CCEA44849FEC45DB53731C76 /* App */,
+				C4A91434CED8499F848D9C8A /* CallBarUITestHost */,
+				F2845AB2C6D3E57FEA2934E7 /* CallBarUITests */,
+				774B8282E31DB09F4FA58CE9 /* Dialer */,
+				90CD8EB3D93AD274A7603240 /* Packages */,
+				AEFFA072E36382CE49768902 /* Platform */,
+				5B7E3B05ACC96D91DAAB5042 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		F2845AB2C6D3E57FEA2934E7 /* CallBarUITests */ = {
+			isa = PBXGroup;
+			children = (
+				2DA92C24EC4E3575E3167790 /* TabActionsUITests.swift */,
+			);
+			name = CallBarUITests;
+			path = Tests/CallBarUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		270CB37AF429A61B2CF1DDA9 /* CallBarUITestHost */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 097C5BF37670483EEF6D22C2 /* Build configuration list for PBXNativeTarget "CallBarUITestHost" */;
+			buildPhases = (
+				74CF96E66829D520C1E106A8 /* Sources */,
+				8C0BF830412177E154C9E898 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CallBarUITestHost;
+			packageProductDependencies = (
+				FDFACD77FDAF8A8CEEDDA074 /* CallBarCore */,
+			);
+			productName = CallBarUITestHost;
+			productReference = 8095D65643FA42A59D560D34 /* CallBarUITestHost.app */;
+			productType = "com.apple.product-type.application";
+		};
+		41F3C2BCAA0120A46B7CDBF9 /* CallBarUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 608C19F78EB9A2EA698DB261 /* Build configuration list for PBXNativeTarget "CallBarUITests" */;
+			buildPhases = (
+				68EC6ED5DACBC9CC7CEEE8AE /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				174AECA6B6F6238BB1165358 /* PBXTargetDependency */,
+			);
+			name = CallBarUITests;
+			packageProductDependencies = (
+			);
+			productName = CallBarUITests;
+			productReference = C12E6ACB1E4CEBCCDFEC58FE /* CallBarUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		CF552F7271246539D14737A3 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					41F3C2BCAA0120A46B7CDBF9 = {
+						TestTargetID = 270CB37AF429A61B2CF1DDA9;
+					};
+				};
+			};
+			buildConfigurationList = 9DB798FC51A1B62498E2DAF1 /* Build configuration list for PBXProject "CallBarUI" */;
+			compatibilityVersion = "Xcode 15.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = E8A9A92A70B9AA6E7140479B;
+			packageReferences = (
+				E2B5A83B6CFF0FC6502F9A51 /* XCLocalSwiftPackageReference "." */,
+			);
+			productRefGroup = 5B7E3B05ACC96D91DAAB5042 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				270CB37AF429A61B2CF1DDA9 /* CallBarUITestHost */,
+				41F3C2BCAA0120A46B7CDBF9 /* CallBarUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		68EC6ED5DACBC9CC7CEEE8AE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6BEF830379C5A73D974F613F /* TabActionsUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		74CF96E66829D520C1E106A8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FDC59C83369EB131BDFE88F4 /* DialerViewController.swift in Sources */,
+				59105C55010AE8615ACFAB3D /* DialerViewModel.swift in Sources */,
+				6EA0E5DA9B4EE5C096D6581C /* FavoriteEditorView.swift in Sources */,
+				7654D4E765AA171E15454A78 /* LocalList.swift in Sources */,
+				9FFC634C19A9FC5FEADF8A6C /* MainMenu.swift in Sources */,
+				38AF258E5DA0C749646371D6 /* PopoverControls.swift in Sources */,
+				8154EF8D4A4EF201D7EBA0E9 /* PopoverTestHost.swift in Sources */,
+				F7DCD1E40DEC4722FBE2BB80 /* SavedCalls.swift in Sources */,
+				5D71E4856A33F27334D04360 /* SetupGuideView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		174AECA6B6F6238BB1165358 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 270CB37AF429A61B2CF1DDA9 /* CallBarUITestHost */;
+			targetProxy = B82C40BD5AA802BF19737883 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		6440455C787626BA64FD1612 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.andriikym.callbar.uitests;
+				SDKROOT = macosx;
+				TEST_TARGET_NAME = CallBarUITestHost;
+			};
+			name = Debug;
+		};
+		72E83098FB552AE5B62E96EE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.andriikym.callbar.uitesthost;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		8130E9ECBED8EFB7B30BDC7B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.andriikym.callbar.uitests;
+				SDKROOT = macosx;
+				TEST_TARGET_NAME = CallBarUITestHost;
+			};
+			name = Release;
+		};
+		8E2B1F2E3FF1DC036B884E47 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		EBC0E49C7A54323CDDBDAA29 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.andriikym.callbar.uitesthost;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		F001AB1FAD7032DC27E50F05 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		097C5BF37670483EEF6D22C2 /* Build configuration list for PBXNativeTarget "CallBarUITestHost" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				72E83098FB552AE5B62E96EE /* Debug */,
+				EBC0E49C7A54323CDDBDAA29 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		608C19F78EB9A2EA698DB261 /* Build configuration list for PBXNativeTarget "CallBarUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6440455C787626BA64FD1612 /* Debug */,
+				8130E9ECBED8EFB7B30BDC7B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		9DB798FC51A1B62498E2DAF1 /* Build configuration list for PBXProject "CallBarUI" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F001AB1FAD7032DC27E50F05 /* Debug */,
+				8E2B1F2E3FF1DC036B884E47 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		E2B5A83B6CFF0FC6502F9A51 /* XCLocalSwiftPackageReference "." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = .;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		FDFACD77FDAF8A8CEEDDA074 /* CallBarCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = CallBarCore;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = CF552F7271246539D14737A3 /* Project object */;
+}

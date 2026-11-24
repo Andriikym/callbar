@@ -10,6 +10,12 @@ final class DialerViewController: NSViewController, NSTextFieldDelegate {
     private let onClose: () -> Void
     private let body = NSView()
     private let segments = NSSegmentedControl()
+    private let listActions = ListActionsButton()
+    private lazy var clearRecentsAction = listAction("Clear Recents…", symbol: "trash", action: #selector(clearRecents))
+    private lazy var addFavoriteAction = listAction("Add Favorite…", symbol: "plus", action: #selector(addFavorite))
+    private lazy var clearFavoritesAction = listAction("Clear Favorites…", symbol: "trash", action: #selector(clearFavorites))
+    private lazy var recentsMenu = listMenu([clearRecentsAction])
+    private lazy var favoritesMenu = listMenu([addFavoriteAction, .separator(), clearFavoritesAction])
     private var tab: Tab = .dialer
     private var editor: FavoriteEditorView?
     private var cancelPanel: (() -> Void)?
@@ -67,7 +73,8 @@ final class DialerViewController: NSViewController, NSTextFieldDelegate {
         icon.setAccessibilityElement(false)
         icon.widthAnchor.constraint(equalToConstant: 36).isActive = true
         icon.heightAnchor.constraint(equalTo: icon.widthAnchor).isActive = true
-        let header = horizontalStack([icon, heading, NSView()])
+        let header = horizontalStack([icon, heading, NSView(), listActions])
+        header.alignment = .top
         header.spacing = 12
 
         let tabs = [("Dialer", "phone"), ("Recents", "clock"), ("Favorites", "star")]
@@ -182,21 +189,64 @@ final class DialerViewController: NSViewController, NSTextFieldDelegate {
         segments.isEnabled = true
         segments.selectedSegment = tab.rawValue
         setupButton.isEnabled = !model.isOpening
+        listActions.isHidden = tab == .dialer
+        listActions.isEnabled = true
         switch tab {
         case .dialer:
+            listActions.menu = nil
             show(dialer)
             numberField.stringValue = model.rawNumber
             refreshDialer()
             if focus { focusNumber() }
         case .recents:
+            configureListActions("Recents actions", menu: recentsMenu)
             showRecents(focus: focus)
         case .favorites:
+            configureListActions("Favorites actions", menu: favoritesMenu)
             showFavorites(focus: focus)
         }
     }
 
+    private func configureListActions(_ label: String, menu: NSMenu) {
+        listActions.setAccessibilityLabel(label)
+        listActions.toolTip = label
+        listActions.menu = menu
+    }
+
+    private func listMenu(_ items: [NSMenuItem]) -> NSMenu {
+        let menu = NSMenu()
+        menu.autoenablesItems = false
+        menu.items = items
+        return menu
+    }
+
+    private func listAction(_ title: String, symbol: String, action: Selector) -> NSMenuItem {
+        let item = NSMenuItem(title: title, action: action, keyEquivalent: "")
+        item.image = NSImage(systemSymbolName: symbol, accessibilityDescription: nil)
+        item.target = self
+        return item
+    }
+
+    @objc private func clearRecents() {
+        guard tab == .recents, cancelPanel == nil, !model.lists.historyReadFailed else { return }
+        confirmRecentRemoval(model.lists.history, clear: true)
+    }
+
+    @objc private func addFavorite() {
+        guard tab == .favorites, cancelPanel == nil else { return }
+        openEditor()
+    }
+
+    @objc private func clearFavorites() {
+        guard tab == .favorites, cancelPanel == nil, !model.lists.favoritesReadFailed else { return }
+        confirmRemoval(model.lists.favorites, clear: true)
+    }
+
     private func showFavorites(focus: Bool) {
         let lists = model.lists
+        let favorites = lists.favorites
+        addFavoriteAction.isEnabled = !lists.favoritesReadFailed
+        clearFavoritesAction.isEnabled = !lists.favoritesReadFailed && !favorites.isEmpty
         if lists.favoritesReadFailed {
             showRecovery("Couldn’t read Favorites. Try again to recover your saved numbers.", focus: focus) { [weak self] in
                 self?.model.lists.retryFavoritesRead()
@@ -205,16 +255,6 @@ final class DialerViewController: NSViewController, NSTextFieldDelegate {
             return
         }
 
-        let favorites = lists.favorites
-        let add = PopoverButton("Add favorite", symbol: "plus", style: .plain) { [weak self] in self?.openEditor() }
-        add.imagePosition = .imageLeading
-        add.imageHugsTitle = true
-        add.contentTintColor = PopoverPalette.blue
-        add.attributedTitle = NSAttributedString(string: add.title, attributes: [.foregroundColor: PopoverPalette.blue])
-        let clear = PopoverButton("Clear Favorites", style: .plain) { [weak self] in self?.confirmRemoval(favorites, clear: true) }
-        clear.isEnabled = !favorites.isEmpty
-        let toolbar = horizontalStack([clear, NSView(), add])
-        toolbar.heightAnchor.constraint(equalToConstant: 27).isActive = true
         var selection: NSButton?
         let rows = favorites.enumerated().map { index, favorite in
             let load = NumberRowButton(title: favorite.name, detail: favorite.number) { [weak self] in
@@ -229,13 +269,38 @@ final class DialerViewController: NSViewController, NSTextFieldDelegate {
             }
             return listRow(load, actions: [edit, remove], hasDivider: index < favorites.count - 1)
         }
-        let content = rows.isEmpty ? [bodyLabel("No favorites yet"), NSView()] : [listScrollView(rows: rows)]
-        show(verticalStack([toolbar] + content))
-        if focus { focusRow(selection, fallback: add) }
+        show(rows.isEmpty ? emptyFavorites() : listScrollView(rows: rows))
+        if focus { focusRow(selection, fallback: listActions) }
+    }
+
+    private func emptyFavorites() -> NSView {
+        let icon = NSImageView()
+        icon.image = NSImage(systemSymbolName: "star", accessibilityDescription: nil)
+        icon.symbolConfiguration = .init(pointSize: 32, weight: .regular)
+        icon.contentTintColor = .secondaryLabelColor
+        icon.setAccessibilityElement(false)
+        icon.heightAnchor.constraint(equalToConstant: 34).isActive = true
+        let title = NSTextField(labelWithString: "No favorites yet")
+        title.font = .systemFont(ofSize: 15, weight: .semibold)
+        title.alignment = .center
+        let hint = bodyLabel("Use the ⋯ menu to add a favorite.")
+        hint.alignment = .center
+        let message = verticalStack([icon, title, hint], spacing: 7)
+        let content = NSView()
+        content.addSubview(message)
+        message.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            message.leadingAnchor.constraint(equalTo: content.leadingAnchor),
+            message.trailingAnchor.constraint(equalTo: content.trailingAnchor),
+            message.centerYAnchor.constraint(equalTo: content.centerYAnchor, constant: 10)
+        ])
+        return content
     }
 
     private func showRecents(focus: Bool) {
         let lists = model.lists
+        let history = lists.history
+        clearRecentsAction.isEnabled = !lists.historyReadFailed && !history.isEmpty
         if lists.historyReadFailed {
             showRecovery(historyIssue, focus: focus) { [weak self] in self?.retryHistory() }
             return
@@ -245,13 +310,6 @@ final class DialerViewController: NSViewController, NSTextFieldDelegate {
         var previousDay: Date?
         var selectedRow: NSButton?
         let calendar = Calendar.current
-        let history = lists.history
-        let clear = PopoverButton("Clear Recents", style: .plain) { [weak self] in
-            self?.confirmRecentRemoval(history, clear: true)
-        }
-        clear.isEnabled = !history.isEmpty
-        let toolbar = horizontalStack([clear, NSView()])
-        toolbar.heightAnchor.constraint(equalToConstant: 27).isActive = true
         for (index, attempt) in history.enumerated() {
             let day = calendar.startOfDay(for: attempt.time)
             if day != previousDay {
@@ -282,7 +340,7 @@ final class DialerViewController: NSViewController, NSTextFieldDelegate {
             rows.append(listRow(load, actions: [star, remove], hasDivider: hasDivider))
         }
 
-        var content: [NSView] = [toolbar]
+        var content: [NSView] = []
         if lists.historyWriteFailed {
             content.append(recoveryControls(historyIssue) { [weak self] in self?.retryHistory() })
         }
@@ -296,7 +354,7 @@ final class DialerViewController: NSViewController, NSTextFieldDelegate {
             content.append(listScrollView(rows: rows))
         }
         show(verticalStack(content))
-        if focus { focusRow(selectedRow, fallback: clear.isEnabled ? clear : segments) }
+        if focus { focusRow(selectedRow, fallback: listActions) }
     }
 
     private static func dayTitle(_ date: Date, calendar: Calendar) -> String {
@@ -452,6 +510,7 @@ final class DialerViewController: NSViewController, NSTextFieldDelegate {
     private func showPanel(_ panel: NSView, cancel: @escaping () -> Void) {
         cancelPanel = cancel
         segments.isEnabled = false
+        listActions.isEnabled = false
         setupButton.isEnabled = false
         show(panel)
     }

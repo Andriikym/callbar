@@ -106,6 +106,44 @@ class PopoverButton: NSButton {
 }
 
 @MainActor
+final class ListActionsButton: NSButton {
+    init() {
+        super.init(frame: .zero)
+        image = NSImage(systemSymbolName: "ellipsis", accessibilityDescription: nil)?
+            .withSymbolConfiguration(.init(pointSize: 15, weight: .semibold))
+        imagePosition = .imageOnly
+        bezelStyle = .rounded
+        focusRingType = .exterior
+        setAccessibilityRole(.menuButton)
+        target = self
+        action = #selector(openMenu)
+        widthAnchor.constraint(equalToConstant: 34).isActive = true
+        heightAnchor.constraint(equalToConstant: 24).isActive = true
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) { fatalError("Use init()") }
+
+    override func keyDown(with event: NSEvent) {
+        switch event.charactersIgnoringModifiers {
+        case "\r", "\u{3}", " ":
+            if !event.isARepeat { performClick(nil) }
+        default:
+            super.keyDown(with: event)
+        }
+    }
+
+    @objc private func openMenu() {
+        guard isEnabled, let menu, let window else { return }
+        window.makeFirstResponder(self)
+        let bottom = isFlipped ? bounds.maxY + 8 : bounds.minY - 8
+        let x = userInterfaceLayoutDirection == .rightToLeft ? bounds.maxX : bounds.maxX - menu.size.width
+        let anchor = NSPoint(x: x, y: bottom)
+        menu.popUp(positioning: nil, at: anchor, in: self)
+    }
+}
+
+@MainActor
 final class NumberRowButton: PopoverButton {
     let titleLabel: NSTextField
     let detailLabel: NSTextField
