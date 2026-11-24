@@ -5,6 +5,9 @@ behavior. It defines the MVP boundaries and number-handling contract.
 
 ## Validation
 
+- Before creating each pull request, increment the middle component of
+  `CFBundleShortVersionString` by one (for example, `0.1.0` to `0.2.0`) and
+  include the version bump in the pull request.
 - Run `swift test --parallel`. Linux runs only CallBarCoreTests; macOS also runs
   CallBarTests, including the system adapter tests with a stub workspace.
 - On macOS, run `./scripts/build-app.sh arm64` and `./scripts/build-app.sh x86_64`
