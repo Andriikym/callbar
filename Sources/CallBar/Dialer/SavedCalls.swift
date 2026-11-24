@@ -1,15 +1,36 @@
 import CallBarCore
 import Foundation
 
+private func validateStoredNumber(_ number: String) throws {
+    guard try PhoneNumber(number).canonical == number else { throw ListReadIssue.unreadable }
+}
+
 struct Favorite: Codable, Equatable, Identifiable {
     let id: UUID
     let name: String
     let number: String
+
+    static func validate(_ favorites: [Favorite]) throws {
+        var numbers = Set<String>()
+        for favorite in favorites {
+            try validateStoredNumber(favorite.number)
+            guard !favorite.name.isEmpty,
+                  favorite.name == favorite.name.trimmingCharacters(in: .whitespacesAndNewlines),
+                  numbers.insert(favorite.number).inserted else { throw ListReadIssue.unreadable }
+        }
+    }
 }
 
 struct CallAttempt: Codable, Equatable, Identifiable {
+    static let maximumEntries = 100
+
     enum Result: String, Codable {
-        case pending, sent, noHandler, openFailed, unknown
+        // These raw values are the stable result strings in Recents v1.
+        case pending = "pending"
+        case sent = "sent"
+        case noHandler = "noHandler"
+        case openFailed = "openFailed"
+        case unknown = "unknown"
 
         var title: String {
             switch self {
@@ -26,6 +47,11 @@ struct CallAttempt: Codable, Equatable, Identifiable {
     let number: String
     let time: Date
     var result: Result
+
+    static func validate(_ attempts: [CallAttempt]) throws {
+        guard attempts.count <= maximumEntries else { throw ListReadIssue.unreadable }
+        for attempt in attempts { try validateStoredNumber(attempt.number) }
+    }
 }
 
 enum FavoriteError: LocalizedError {
@@ -50,12 +76,14 @@ final class SavedCalls {
     private(set) var historyWriteFailed = false
 
     init(directory: URL) {
-        favoriteStore = LocalList(url: directory.appendingPathComponent("Favorites.json"))
-        historyStore = LocalList(url: directory.appendingPathComponent("Recents.json"))
+        favoriteStore = LocalList(url: directory.appendingPathComponent("Favorites.json"), validate: Favorite.validate)
+        historyStore = LocalList(url: directory.appendingPathComponent("Recents.json"), validate: CallAttempt.validate)
     }
 
-    var favoritesReadFailed: Bool { favoriteStore.readFailed }
-    var historyReadFailed: Bool { historyStore.readFailed }
+    var favoritesReadIssue: ListReadIssue? { favoriteStore.readIssue }
+    var historyReadIssue: ListReadIssue? { historyStore.readIssue }
+    var favoritesReadFailed: Bool { favoritesReadIssue != nil }
+    var historyReadFailed: Bool { historyReadIssue != nil }
 
     var favorites: [Favorite] {
         favoriteStore.entries.sorted {
@@ -170,7 +198,7 @@ final class SavedCalls {
         guard !historyReadFailed, !unsavedAttempts.isEmpty else { return }
 
         do {
-            try historyStore.commit(Array(historyWithUnsavedAttempts.prefix(100)))
+            try historyStore.commit(Array(historyWithUnsavedAttempts.prefix(CallAttempt.maximumEntries)))
             unsavedAttempts.removeAll()
             historyWriteFailed = false
         } catch {

@@ -5,6 +5,9 @@ behavior. It defines the MVP boundaries and number-handling contract.
 
 ## Validation
 
+- Before creating each pull request, increment the middle component of
+  `CFBundleShortVersionString` by one (for example, `0.1.0` to `0.2.0`) and
+  include the version bump in the pull request.
 - Run `swift test --parallel`. Linux runs only CallBarCoreTests; macOS also runs
   CallBarTests, including the system adapter tests with a stub workspace.
 - On macOS, run `./scripts/build-app.sh arm64` and `./scripts/build-app.sh x86_64`
@@ -34,9 +37,10 @@ behavior. It defines the MVP boundaries and number-handling contract.
   and launch operations on MainActor.
 - A successful system URL open means only that the request was handed off.
   Do not infer connection, iPhone availability, answer, or call completion.
-- Keep entered numbers in process memory only for the MVP. Flag new number
-  logging, analytics, persistence, automatic clipboard reading, or Contacts/
-  microphone permissions unless an approved feature changes that requirement.
+- Follow the [storage and privacy requirements](docs/requirements.md#shared-behavior-and-proposals)
+  for the Dialer draft, Favorites, and Recents. Flag new number logging,
+  analytics, persistence, automatic clipboard reading, or Contacts/microphone
+  permissions unless an approved feature changes that requirement.
 
 ### Compatibility and evidence
 

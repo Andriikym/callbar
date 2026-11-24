@@ -204,7 +204,14 @@ final class FavoritesAcceptanceTests: XCTestCase {
         XCTAssertEqual(app.model.rawNumber, first.number)
         XCTAssertTrue(labels(in: app.view).contains { $0.contains("could not find a calling app") })
         let reopened = fixture(directory: app.directory)
-        XCTAssertEqual(reopened.model.lists.history, app.model.lists.history)
+        let savedHistory = reopened.model.lists.history
+        let currentHistory = app.model.lists.history
+        XCTAssertEqual(savedHistory.map(\.id), currentHistory.map(\.id))
+        XCTAssertEqual(savedHistory.map(\.number), currentHistory.map(\.number))
+        XCTAssertEqual(savedHistory.map(\.result), currentHistory.map(\.result))
+        for (saved, current) in zip(savedHistory, currentHistory) {
+            XCTAssertEqual(saved.time.timeIntervalSince1970, current.time.timeIntervalSince1970, accuracy: 0.000_001)
+        }
         XCTAssertEqual(reopened.model.lists.history.map(\.result), [.noHandler])
         XCTAssertEqual(reopened.model.lists.favorites, [first])
         XCTAssertTrue(reopened.model.rawNumber.isEmpty)
@@ -292,7 +299,13 @@ final class FavoritesAcceptanceTests: XCTestCase {
         try button("Clear Recents", in: app.view).performClick(nil)
         XCTAssertEqual(lists.history.map(\.id), [newer.id, first.id])
         try restoreClear()
-        XCTAssertEqual(SavedCalls(directory: app.directory).history, lists.history)
+        let savedHistory = SavedCalls(directory: app.directory).history
+        XCTAssertEqual(savedHistory.map(\.id), lists.history.map(\.id))
+        XCTAssertEqual(savedHistory.map(\.number), lists.history.map(\.number))
+        XCTAssertEqual(savedHistory.map(\.result), lists.history.map(\.result))
+        for (saved, current) in zip(savedHistory, lists.history) {
+            XCTAssertEqual(saved.time.timeIntervalSince1970, current.time.timeIntervalSince1970, accuracy: 0.000_001)
+        }
         try button("Retry", in: app.view).performClick(nil)
         XCTAssertFalse(try app.menuItem("Clear Recents…").isEnabled)
         let reopened = SavedCalls(directory: app.directory)

@@ -26,6 +26,8 @@ The root [AGENTS.md](../AGENTS.md) contains the review rules derived from
 [architecture.md](architecture.md), including number safety, explicit call
 intent, asynchronous handoff, privacy, and macOS compatibility.
 
+For changes involving user data, ask “After quitting and reopening CallBar, what user data should still be there?” If the answer changes, update the [storage requirements](requirements.md#shared-behavior-and-proposals), [README privacy section](../README.md#privacy), and relevant acceptance checks in the same pull request. Check changes to serialized fields against the [on-disk format](storage-format.md).
+
 Automatic review is configured in Codex, separately from GitHub Actions:
 
 1. Open [Codex code review settings](https://chatgpt.com/codex/settings/code-review)
