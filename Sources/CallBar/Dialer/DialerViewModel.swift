@@ -1,6 +1,5 @@
 import CallBarCore
 import Foundation
-import SwiftUI
 
 struct DialerNotice: Equatable {
     enum Kind: Equatable {
@@ -13,22 +12,26 @@ struct DialerNotice: Equatable {
 }
 
 @MainActor
-final class DialerViewModel: ObservableObject {
-    @Published var rawNumber = "" {
+final class DialerViewModel {
+    var rawNumber = "" {
         didSet {
             if oldValue != rawNumber {
                 notice = nil
             }
         }
     }
-    @Published private(set) var isOpening = false
-    @Published private(set) var notice: DialerNotice?
-    @Published private(set) var presentationID = 0
+    private(set) var isOpening = false
+    private(set) var notice: DialerNotice?
+    var onCallStateChange: (() -> Void)?
 
+    let lists: SavedCalls
     private let dialCall: DialCall
+    private let now: () -> Date
 
-    init(dialCall: DialCall) {
+    init(dialCall: DialCall, lists: SavedCalls, now: @escaping () -> Date = Date.init) {
         self.dialCall = dialCall
+        self.lists = lists
+        self.now = now
     }
 
     var normalizedNumber: String? {
@@ -56,23 +59,43 @@ final class DialerViewModel: ObservableObject {
 
     func prepareForPresentation() {
         notice = nil
-        presentationID += 1
     }
 
-    func call() async {
-        guard !isOpening else { return }
-        let input = rawNumber
+    @discardableResult
+    func call() -> Task<Void, Never>? {
+        guard !isOpening else { return nil }
+        let request: CallRequest
+        do {
+            request = try CallRequest(rawNumber: rawNumber)
+        } catch {
+            notice = DialerNotice(kind: .error, message: error.localizedDescription)
+            onCallStateChange?()
+            return nil
+        }
+
         isOpening = true
         notice = nil
-        defer { isOpening = false }
+        let attempt = lists.startAttempt(number: request.number.canonical, at: now())
+        onCallStateChange?()
+        return Task { await handOff(request, attempt: attempt) }
+    }
+
+    private func handOff(_ request: CallRequest, attempt: CallAttempt) async {
+        defer {
+            isOpening = false
+            onCallStateChange?()
+        }
 
         do {
-            let number = try await dialCall.start(rawNumber: input)
+            let number = try await dialCall.start(request)
+            lists.finishAttempt(attempt, with: .sent)
             notice = DialerNotice(
                 kind: .information,
                 message: "Number \(number.canonical) was sent to the calling app. Continue in the system dialog."
             )
         } catch {
+            let result: CallAttempt.Result = (error as? CallLaunchError) == .noHandler ? .noHandler : .openFailed
+            lists.finishAttempt(attempt, with: result)
             notice = DialerNotice(kind: .error, message: error.localizedDescription)
         }
     }

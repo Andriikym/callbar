@@ -1,26 +1,15 @@
 import AppKit
-import SwiftUI
 
 @MainActor
-final class StatusBarController: NSObject {
+final class StatusBarController: NSObject, NSPopoverDelegate {
     private let statusItem: NSStatusItem
-    private let popover: NSPopover
     private let model: DialerViewModel
+    private var popover: NSPopover?
 
     init(model: DialerViewModel) {
         self.model = model
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        popover = NSPopover()
         super.init()
-
-        let view = DialerView(
-            model: model,
-            onClose: { [weak self] in self?.popover.performClose(nil) },
-            onQuit: { NSApplication.shared.terminate(nil) }
-        )
-        popover.contentViewController = NSHostingController(rootView: view)
-        popover.contentSize = NSSize(width: 360, height: 400)
-        popover.behavior = .transient
 
         if let button = statusItem.button {
             button.image = NSImage(systemSymbolName: "phone", accessibilityDescription: "CallBar")
@@ -33,14 +22,30 @@ final class StatusBarController: NSObject {
     }
 
     @objc private func togglePopover() {
-        if popover.isShown {
+        if let popover {
             popover.performClose(nil)
             return
         }
         guard let button = statusItem.button else { return }
         NSApplication.shared.activate(ignoringOtherApps: true)
         model.prepareForPresentation()
+
+        let popover = NSPopover()
+        let controller = DialerViewController(
+            model: model,
+            onClose: { [weak popover] in popover?.performClose(nil) }
+        )
+        popover.contentViewController = controller
+        popover.contentSize = DialerViewController.popoverSize
+        popover.behavior = .transient
+        popover.delegate = self
+        self.popover = popover
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
-        popover.contentViewController?.view.window?.makeKey()
+        controller.view.window?.makeKey()
+        controller.focusNumber()
+    }
+
+    func popoverDidClose(_ notification: Notification) {
+        popover = nil
     }
 }
