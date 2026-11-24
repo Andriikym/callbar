@@ -97,13 +97,7 @@ final class DialerViewController: NSViewController, NSTextFieldDelegate {
         setupButton.font = .systemFont(ofSize: 11.5)
         let quit = PopoverButton("Quit CallBar", style: .plain) { NSApp.terminate(nil) }
         quit.font = .systemFont(ofSize: 11.5)
-        let version = NSTextField(labelWithString: Bundle.main.callBarVersionLabel)
-        version.font = .systemFont(ofSize: 10)
-        version.textColor = .tertiaryLabelColor
-        version.alignment = .center
-        version.setAccessibilityLabel("CallBar version \(Bundle.main.callBarVersionLabel)")
-        version.setContentCompressionResistancePriority(.required, for: .horizontal)
-        let footer = horizontalStack([setupButton, NSView(), version, NSView(), quit])
+        let footer = horizontalStack([setupButton, NSView(), quit])
         footer.heightAnchor.constraint(equalToConstant: 23).isActive = true
         let chrome = verticalStack([header, segments, body, divider, footer], spacing: 10)
         chrome.setCustomSpacing(14, after: header)
