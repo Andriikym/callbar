@@ -28,4 +28,10 @@ if [[ "$actual_architectures" != "$architecture" ]]; then
     exit 1
 fi
 /usr/bin/codesign --verify --deep --strict "$app_path"
-printf 'Validated %s menu bar app bundle.\n' "$architecture"
+if ! sandbox_enabled="$(/usr/bin/codesign --display --entitlements - --xml "$app_path" |
+    /usr/bin/plutil -extract 'com\.apple\.security\.app-sandbox' raw -expect bool -o - -)" ||
+    [[ "$sandbox_enabled" != true ]]; then
+    printf 'Expected App Sandbox to be enabled in %s.\n' "$app_path" >&2
+    exit 1
+fi
+printf 'Validated %s sandboxed menu bar app bundle.\n' "$architecture"
