@@ -65,7 +65,7 @@ final class SavedCalls {
     }
 
     var history: [CallAttempt] {
-        historyStore.entries.map { entry in
+        historyWithUnsavedAttempts.map { entry in
             guard entry.result == .pending, !pendingInThisSession.contains(entry.id) else { return entry }
             var interrupted = entry
             interrupted.result = .unknown
@@ -125,6 +125,7 @@ final class SavedCalls {
     }
 
     func finishAttempt(_ attempt: CallAttempt, with result: CallAttempt.Result) {
+        guard pendingInThisSession.remove(attempt.id) != nil else { return }
         var finished = attempt
         finished.result = result
         stage(finished)
@@ -144,10 +145,16 @@ final class SavedCalls {
         commitHistory()
     }
 
-    private func commitHistory() {
-        guard !historyReadFailed, !unsavedAttempts.isEmpty else { return }
+    func removeAttempts(ids: Set<UUID>) throws {
+        let remaining = historyStore.entries.filter { !ids.contains($0.id) }
+        if remaining.count != historyStore.entries.count { try historyStore.commit(remaining) }
+        unsavedAttempts.removeAll { ids.contains($0.id) }
+        pendingInThisSession.subtract(ids)
+        if unsavedAttempts.isEmpty { historyWriteFailed = false }
+    }
 
-        var entries = history
+    private var historyWithUnsavedAttempts: [CallAttempt] {
+        var entries = historyStore.entries
         for attempt in unsavedAttempts {
             if let index = entries.firstIndex(where: { $0.id == attempt.id }) {
                 entries[index] = attempt
@@ -155,9 +162,14 @@ final class SavedCalls {
                 entries.insert(attempt, at: 0)
             }
         }
+        return entries
+    }
+
+    private func commitHistory() {
+        guard !historyReadFailed, !unsavedAttempts.isEmpty else { return }
+
         do {
-            try historyStore.commit(Array(entries.prefix(100)))
-            pendingInThisSession.subtract(unsavedAttempts.filter { $0.result != .pending }.map(\.id))
+            try historyStore.commit(Array(historyWithUnsavedAttempts.prefix(100)))
             unsavedAttempts.removeAll()
             historyWriteFailed = false
         } catch {

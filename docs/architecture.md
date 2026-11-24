@@ -84,7 +84,7 @@ The project opens in Xcode without a project generator or third-party packages. 
 
 ### Storage and privacy
 
-Favorites and Recents use separate files in the current user’s Application Support directory. CallBar saves changes atomically and keeps the last committed entries visible if a write fails. The Dialer draft stays in memory. Numbers stay out of analytics and diagnostic logs. The app requires no Contacts, microphone, or Accessibility permission and reads the clipboard only when the user pastes.
+Favorites and Recents use separate files in the current user’s Application Support directory. CallBar saves changes atomically. If a Recents write fails, the committed file is preserved and Recents shows the latest observed handoff result in the current session with an option to retry saving. Users can remove one attempt or clear the list after confirmation. The Dialer draft stays in memory. Numbers stay out of analytics and diagnostic logs. The app requires no Contacts, microphone, or Accessibility permission and reads the clipboard only when the user pastes.
 
 ### Future extensions
 

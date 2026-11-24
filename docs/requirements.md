@@ -2,12 +2,12 @@
 
 **Review draft · 23 November 2026.** “Recents” is the Call History tab. B and O identify the documented baseline and observation limits. F, H and P identify scenarios and shared behavior. Q identifies a product decision. All eight product decisions (Q1–Q8) are confirmed. The mockups illustrate alternatives. The scenarios and acceptance criteria describe the intended release behavior. The [local acceptance record](#favorites-local-acceptance) covers F1–F6.
 
-## Documented behavior
+## Baseline before Favorites and Recents
 
-| ID | What the user can do today | Evidence |
+| ID | Behavior before Favorites and Recents | Evidence |
 | --- | --- | --- |
 | B1 | Open the popover, type or paste a number, review the normalized number, and use Call or Enter to request a handoff. An empty or invalid field prevents calling. A pending handoff blocks repeated activation. Esc dismisses the popover. | [README](../README.md), [architecture](architecture.md) |
-| B2 | Keep numbers in process memory. The documented MVP has no saved history, persistent favorites, Contacts lookup, or automatic clipboard reading. The roadmap proposes local favorites and speed dial. | [README](../README.md), [release plan](implementation-plan.md) |
+| B2 | The original dialer kept numbers in process memory. The roadmap proposed local favorites and speed dial. Current storage follows Q3. | [Release plan](implementation-plan.md), [current privacy documentation](../README.md#privacy) |
 | B3 | The supplied screenshot shows a single dialer. The earlier designs explored an inline list, speed dial, and separate tabs. The three-tab preview shows saving a recent number and loading it into Dialer. Local persistence of both lists is now required by Q3. Q7 defines confirmation for removal and Q8 sets the local history limit. | User screenshot and conversation mockups; [manual acceptance status](manual-testing.md) |
 
 ## What CallBar can observe
@@ -85,7 +85,7 @@ Show each accepted call action in its own row, newest first. Group rows by the l
 | T8 | Q6 | In a 12-hour locale, record an unnamed number at 11:59 PM, then Alex at 12:01 AM the next day. Open Recents and relaunch later that morning. | Both views show Alex under Today with number and 12:01 AM on the second line. The unnamed number appears under Yesterday with 11:59 PM below it. Once older, an event moves under its calendar date and retains its time. |
 | T9 | Q7 | With two favorites and two recent attempts to the same number, request deletion of one favorite. Repeat for one attempt. For each target, first dismiss with Esc, then reopen and confirm. | Each dialog identifies its target and defaults to Cancel. Dismissal preserves both lists. Confirmation deletes exactly the selected entry. Removing a favorite updates matching stars; removing an attempt preserves its sibling. Relaunch preserves both deletions. |
 | T10 | Q8 | Start with 99 attempts and the oldest number saved as a favorite. Record a 100th attempt. Try invalid input, then record a valid 101st attempt to an existing number and have its handoff fail. Relaunch. | At 100, all original rows are present. Invalid input evicts nothing. The 101st attempt automatically replaces only the oldest entry. Attempts 2–101 persist in newest-first order, including the new failure, and the saved favorite is still available. |
-| T11 | Q3, Q8 | With 100 committed attempts, simulate a storage failure when recording the next attempt. Retry the history write after storage recovers. | The failed write preserves the 100 committed rows. Successful retry records the new attempt once and evicts the oldest once. Retrying storage sends zero additional call requests. |
+| T11 | Q3, Q8 | With 100 committed attempts, simulate a storage failure when recording the next attempt. Retry the history write after storage recovers. | The failed write preserves the 100 committed rows on disk, and the new attempt and its observed result are visible in the current session. Successful retry records the new attempt once and evicts the oldest once. Retrying storage sends zero additional call requests. |
 
 ## Cross-scenario acceptance checks
 

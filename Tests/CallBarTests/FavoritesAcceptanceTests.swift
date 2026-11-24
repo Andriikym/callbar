@@ -231,6 +231,46 @@ final class FavoritesAcceptanceTests: XCTestCase {
     }
 
     @MainActor
+    func testRecentsRemovalConfirmsByAttemptAndClearPreservesFavoritesAndDraft() async throws {
+        let app = fixture()
+        let lists = app.model.lists
+        let favorite = try lists.saveFavorite(id: nil, name: "Front desk", rawNumber: "0201234567")
+        let phone = try XCTUnwrap(views(NSTextField.self, in: app.view).first { $0.isEditable })
+        phone.stringValue = "5551234"
+        let time = Date()
+        let first = lists.startAttempt(number: favorite.number, at: time)
+        lists.finishAttempt(first, with: .sent)
+        let second = lists.startAttempt(number: favorite.number, at: time)
+        lists.finishAttempt(second, with: .openFailed)
+        app.open(1)
+
+        let label = "Remove call to \(favorite.number), \(time.formatted())"
+        try button(label, in: app.view).performClick(nil)
+        XCTAssertTrue(labels(in: app.view).contains("Remove call attempt?"))
+        XCTAssertEqual(try button("Cancel", in: app.view).keyEquivalent, "\r")
+        app.controller.cancelOperation(nil)
+        XCTAssertEqual(lists.history.map(\.id), [second.id, first.id])
+
+        let restore = try blockWrites(to: app.directory.appendingPathComponent("Recents.json"))
+        try button(label, in: app.view).performClick(nil)
+        try button("Remove", in: app.view).performClick(nil)
+        XCTAssertEqual(lists.history.map(\.id), [second.id, first.id])
+        try restore()
+        try button("Retry", in: app.view).performClick(nil)
+        XCTAssertEqual(SavedCalls(directory: app.directory).history.map(\.id), [first.id])
+
+        try button("Clear Recents", in: app.view).performClick(nil)
+        XCTAssertTrue(labels(in: app.view).contains("Remove 1 call attempt from Recents."))
+        try button("Clear Recents", in: app.view).performClick(nil)
+        XCTAssertFalse(try button("Clear Recents", in: app.view).isEnabled)
+        let reopened = SavedCalls(directory: app.directory)
+        XCTAssertTrue(reopened.history.isEmpty)
+        XCTAssertEqual(reopened.favorites, [favorite])
+        XCTAssertEqual(app.model.rawNumber, "5551234")
+        XCTAssertTrue(app.launcher.requests.isEmpty)
+    }
+
+    @MainActor
     func testListRowsKeepMetadataVisibleAndPinActionsToTrailingEdge() async throws {
         let app = fixture()
         let favorite = try app.model.lists.saveFavorite(
@@ -245,8 +285,9 @@ final class FavoritesAcceptanceTests: XCTestCase {
             app.view.layoutSubtreeIfNeeded()
             let selection = try XCTUnwrap(views(NumberRowButton.self, in: app.view).first)
             let row = try XCTUnwrap(selection.superview)
-            let actionTitle = tab == 1 ? "Edit" : "Remove"
-            let action = try button("\(actionTitle) \(favorite.name), \(favorite.number)", in: row)
+            let actionTitle = tab == 1 ? "Remove call to \(favorite.number), \(time.formatted())"
+                : "Remove \(favorite.name), \(favorite.number)"
+            let action = try button(actionTitle, in: row)
             let titleFrame = selection.titleLabel.convert(selection.titleLabel.bounds, to: row)
             let detailFrame = selection.detailLabel.convert(selection.detailLabel.bounds, to: row)
             let actionFrame = action.convert(action.bounds, to: row)

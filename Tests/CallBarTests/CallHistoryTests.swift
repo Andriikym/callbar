@@ -30,7 +30,8 @@ final class CallHistoryTests: XCTestCase {
         XCTAssertEqual(launcher.requests.count, 101)
         XCTAssertEqual(model.notice?.kind, .error)
         XCTAssertTrue(lists.historyWriteFailed)
-        XCTAssertEqual(lists.history, committed)
+        XCTAssertEqual(lists.history.first?.result, .openFailed)
+        XCTAssertEqual(Array(lists.history.dropFirst()), committed)
 
         try restore()
         lists.retryHistory()
@@ -70,7 +71,8 @@ final class CallHistoryTests: XCTestCase {
         await task.value
         XCTAssertTrue(lists.historyWriteFailed)
         XCTAssertEqual(model.notice?.kind, .information)
-        XCTAssertEqual(lists.history, [pending])
+        XCTAssertEqual(lists.history.map(\.id), [pending.id])
+        XCTAssertEqual(lists.history.map(\.result), [.sent])
         try restore()
         lists.retryHistory()
         lists.retryHistory()
@@ -78,6 +80,32 @@ final class CallHistoryTests: XCTestCase {
         XCTAssertEqual(history.map(\.id), [pending.id])
         XCTAssertEqual(history.map(\.result), [.sent])
         XCTAssertEqual(launcher.requests.count, 1)
+    }
+
+    @MainActor
+    func testClearingRecentsDiscardsUnsavedAttemptsAndIgnoresLateCompletion() async throws {
+        let directory = temporaryDirectory()
+        let lists = SavedCalls(directory: directory)
+        let committed = lists.startAttempt(number: "0201234567", at: Date())
+        let restore = try blockWrites(to: directory.appendingPathComponent("Recents.json"))
+        let unsaved = lists.startAttempt(number: committed.number, at: Date())
+        let ids = Set(lists.history.map(\.id))
+        XCTAssertEqual(ids, [committed.id, unsaved.id])
+        XCTAssertThrowsError(try lists.removeAttempts(ids: ids))
+        XCTAssertEqual(Set(lists.history.map(\.id)), ids)
+
+        try restore()
+        try lists.removeAttempts(ids: ids)
+        lists.finishAttempt(committed, with: .sent)
+        lists.finishAttempt(unsaved, with: .openFailed)
+        lists.retryHistory()
+        XCTAssertFalse(lists.historyWriteFailed)
+        XCTAssertTrue(lists.history.isEmpty)
+        XCTAssertTrue(SavedCalls(directory: directory).history.isEmpty)
+
+        let next = lists.startAttempt(number: committed.number, at: Date())
+        lists.finishAttempt(next, with: .sent)
+        XCTAssertEqual(SavedCalls(directory: directory).history.map(\.id), [next.id])
     }
 
     private func temporaryDirectory() -> URL {

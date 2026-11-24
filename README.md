@@ -51,4 +51,8 @@ The archive contains a development build with an ad hoc signature, not a notariz
 - [Manual testing on a real Mac and iPhone](docs/manual-testing.md)
 - [Verified build and current checkpoint](docs/verification.md)
 
-Numbers stay in the current process's memory. The MVP does not store call history, send analytics, or request access to Contacts.
+## Privacy
+
+CallBar stores Favorites (names and numbers) and up to 100 recent call attempts for the current Mac user in `~/Library/Application Support/CallBar/`. Each attempt records the dialed number, request time, and the result of handing the number to the calling app. Failed handoffs are included. You can remove individual attempts or choose **Clear Recents**. These controls affect only CallBar’s history.
+
+The Dialer draft stays in memory. CallBar sends no analytics, keeps numbers out of diagnostic logs, and requests no access to Contacts or the microphone. It reads the clipboard only when you paste.

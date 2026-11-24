@@ -246,6 +246,12 @@ final class DialerViewController: NSViewController, NSTextFieldDelegate {
         var selectedRow: NSButton?
         let calendar = Calendar.current
         let history = lists.history
+        let clear = PopoverButton("Clear Recents", style: .plain) { [weak self] in
+            self?.confirmRecentRemoval(history, clear: true)
+        }
+        clear.isEnabled = !history.isEmpty
+        let toolbar = horizontalStack([clear, NSView()])
+        toolbar.heightAnchor.constraint(equalToConstant: 27).isActive = true
         for (index, attempt) in history.enumerated() {
             let day = calendar.startOfDay(for: attempt.time)
             if day != previousDay {
@@ -268,11 +274,15 @@ final class DialerViewController: NSViewController, NSTextFieldDelegate {
             }
             configureStar(star, number: attempt.number)
             if recentSelection == attempt.id { selectedRow = star }
+            let remove = PopoverButton("Remove call to \(attempt.number), \(attempt.time.formatted())",
+                                       symbol: "trash", style: .plain) { [weak self] in
+                self?.confirmRecentRemoval([attempt])
+            }
             let hasDivider = index + 1 < history.count && calendar.isDate(history[index + 1].time, inSameDayAs: day)
-            rows.append(listRow(load, actions: [star], hasDivider: hasDivider))
+            rows.append(listRow(load, actions: [star, remove], hasDivider: hasDivider))
         }
 
-        var content: [NSView] = []
+        var content: [NSView] = [toolbar]
         if lists.historyWriteFailed {
             content.append(recoveryControls(historyIssue) { [weak self] in self?.retryHistory() })
         }
@@ -286,7 +296,7 @@ final class DialerViewController: NSViewController, NSTextFieldDelegate {
             content.append(listScrollView(rows: rows))
         }
         show(verticalStack(content))
-        if focus { focusRow(selectedRow, fallback: segments) }
+        if focus { focusRow(selectedRow, fallback: clear.isEnabled ? clear : segments) }
     }
 
     private static func dayTitle(_ date: Date, calendar: Calendar) -> String {
@@ -379,19 +389,17 @@ final class DialerViewController: NSViewController, NSTextFieldDelegate {
         guard let first = favorites.first else { return }
         if !clear { favoriteSelection = first.id }
 
-        let title = NSTextField(labelWithString: clear ? "Clear Favorites?" : "Remove favorite?")
-        title.font = .systemFont(ofSize: 16, weight: .semibold)
         let quantity = favorites.count == 1 ? "1 saved favorite" : "\(favorites.count) saved favorites"
         let detail = clear ? "Remove \(quantity) from Favorites." : "\(first.name)\n\(first.number)"
         let cancel = { [weak self] in
             guard let self else { return }
             if let editor { showEditor(editor) } else { showTab(focus: true) }
         }
-        let cancelButton = PopoverButton("Cancel", action: cancel)
-        cancelButton.keyEquivalent = "\r"
         let ids = Set(favorites.map(\.id))
         let actionTitle = clear ? "Clear Favorites" : "Remove"
-        let remove = PopoverButton(error == nil ? actionTitle : "Retry") { [weak self] in
+        showRemovalConfirmation(title: clear ? "Clear Favorites?" : "Remove favorite?", detail: detail,
+                                actionTitle: actionTitle, target: clear ? quantity : "\(first.name), \(first.number)",
+                                error: error, cancel: cancel) { [weak self] in
             guard let self else { return }
             do {
                 try model.lists.removeFavorites(ids: ids)
@@ -400,7 +408,39 @@ final class DialerViewController: NSViewController, NSTextFieldDelegate {
                 confirmRemoval(favorites, clear: clear, error: error.localizedDescription)
             }
         }
-        remove.setAccessibilityLabel(clear ? "\(remove.title), \(quantity)" : "\(remove.title) \(first.name), \(first.number)")
+    }
+
+    private func confirmRecentRemoval(_ attempts: [CallAttempt], clear: Bool = false, error: String? = nil) {
+        guard let first = attempts.first else { return }
+        recentSelection = clear ? nil : first.id
+        let quantity = attempts.count == 1 ? "1 call attempt" : "\(attempts.count) call attempts"
+        let date = first.time.formatted(date: .abbreviated, time: .shortened)
+        let detail = clear ? "Remove \(quantity) from Recents." : "\(first.number)\n\(date)"
+        let cancel: () -> Void = { [weak self] in self?.showTab(focus: true) }
+        let ids = Set(attempts.map(\.id))
+        showRemovalConfirmation(title: clear ? "Clear Recents?" : "Remove call attempt?", detail: detail,
+                                actionTitle: clear ? "Clear Recents" : "Remove",
+                                target: clear ? quantity : "\(first.number), \(date)", error: error,
+                                cancel: cancel) { [weak self] in
+            guard let self else { return }
+            do {
+                try model.lists.removeAttempts(ids: ids)
+                showTab(focus: true)
+            } catch {
+                confirmRecentRemoval(attempts, clear: clear, error: "Couldn’t remove call history. Try again.")
+            }
+        }
+    }
+
+    private func showRemovalConfirmation(title text: String, detail: String, actionTitle: String, target: String,
+                                         error: String?, cancel: @escaping () -> Void,
+                                         confirm: @escaping () -> Void) {
+        let title = NSTextField(labelWithString: text)
+        title.font = .systemFont(ofSize: 16, weight: .semibold)
+        let cancelButton = PopoverButton("Cancel", action: cancel)
+        cancelButton.keyEquivalent = "\r"
+        let remove = PopoverButton(error == nil ? actionTitle : "Retry", action: confirm)
+        remove.setAccessibilityLabel("\(remove.title), \(target)")
         var children: [NSView] = [title, bodyLabel(detail)]
         if let error { children.append(bodyLabel(error, color: .systemRed)) }
         children += [horizontalStack([NSView(), cancelButton, remove]), NSView()]
