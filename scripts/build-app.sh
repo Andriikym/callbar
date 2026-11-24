@@ -23,7 +23,8 @@ archive_path="$project_root/dist/CallBar-macOS-$architecture.zip"
 mkdir -p "$app_path/Contents/MacOS"
 cp "$project_root/Resources/Info.plist" "$app_path/Contents/Info.plist"
 /usr/bin/install -m 755 "$binary_directory/CallBar" "$app_path/Contents/MacOS/CallBar"
-/usr/bin/codesign --force --sign - --timestamp=none "$app_path"
+/usr/bin/codesign --force --sign - --timestamp=none \
+    --entitlements "$project_root/Resources/CallBar.entitlements" "$app_path"
 
 "$project_root/scripts/verify-app.sh" "$app_path" "$architecture"
 /usr/bin/ditto -c -k --sequesterRsrc --keepParent "$app_path" "$archive_path"

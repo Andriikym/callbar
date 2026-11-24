@@ -28,7 +28,7 @@ flowchart TD
 | Sources/CallBar/Platform | System handoff and atomic local storage | AppKit, CallBarCore, Foundation |
 | Tests/CallBarCoreTests | Input rules and use case contracts | XCTest, CallBarCore |
 | Tests/CallBarTests | View model behavior, errors, and duplicate-call protection | XCTest, CallBar |
-| Resources | Info.plist for the bundle | — |
+| Resources | Bundle metadata and App Sandbox entitlement | — |
 | scripts | Create, verify, and package the .app | Bash, Swift CLI, macOS system tools |
 
 One Swift package contains two modules, with dependencies assembled in AppDelegate. A protocol is used only at the operating-system boundary; no dependency container or extra layers are needed.
@@ -80,11 +80,11 @@ Successfully opening a URL confirms only that the request was handed to a handle
 
 ### Swift Package Manager and bundle script
 
-The project opens in Xcode without a project generator or third-party packages. The script creates a complete .app with Info.plist, executable, and local ad hoc signature. CI verifies the bundle, not just the executable.
+The project opens in Xcode without a project generator or third-party packages. The script creates a complete .app and signs it ad hoc with the App Sandbox entitlement. CI verifies the bundle and its signed entitlement.
 
 ### Storage and privacy
 
-Favorites and Recents use separate files in the current user’s Application Support directory. CallBar saves changes atomically. If a Recents write fails, the committed file is preserved and Recents shows the latest observed handoff result in the current session with an option to retry saving. Users can remove one attempt or clear the list after confirmation. The Dialer draft stays in memory. Numbers stay out of analytics and diagnostic logs. The app requires no Contacts, microphone, or Accessibility permission and reads the clipboard only when the user pastes.
+Favorites and Recents use separate files in the packaged app’s sandbox container. CallBar uses Foundation to resolve the container’s Application Support directory and saves changes atomically. If a Recents write fails, the committed file is preserved and Recents shows the latest observed handoff result in the current session with an option to retry saving. Users can remove one attempt or clear the list after confirmation. The Dialer draft stays in memory. Numbers stay out of analytics and diagnostic logs. The app requires no Contacts, microphone, or Accessibility permission and reads the clipboard only when the user pastes.
 
 ### Future extensions
 

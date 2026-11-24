@@ -53,6 +53,6 @@ The archive contains a development build with an ad hoc signature, not a notariz
 
 ## Privacy
 
-CallBar stores Favorites (names and numbers) and up to 100 recent call attempts for the current Mac user in `~/Library/Application Support/CallBar/`. Each attempt records the dialed number, request time, and the result of handing the number to the calling app. Failed handoffs are included. You can remove individual attempts or choose **Clear Recents**. These controls affect only CallBar’s history.
+The packaged app uses App Sandbox. It stores Favorites (names and numbers) and up to 100 recent call attempts in `~/Library/Containers/com.andriikym.callbar/Data/Library/Application Support/CallBar/`. Each attempt records the dialed number, request time, and the result of handing the number to the calling app. Failed handoffs are included. You can remove individual attempts or choose **Clear Recents**. These controls affect only CallBar’s history.
 
 The Dialer draft stays in memory. CallBar sends no analytics, keeps numbers out of diagnostic logs, and requests no access to Contacts or the microphone. It reads the clipboard only when you paste.
