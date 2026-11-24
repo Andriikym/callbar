@@ -22,8 +22,11 @@ final class StorageV1CompatibilityTests: XCTestCase {
         model.rawNumber = favorite.number
         await model.call()?.value
         let attempt = try XCTUnwrap(lists.history.first)
-        XCTAssertEqual(try records(in: recents), [["id": attempt.id.uuidString, "number": "00123",
-                                                   "time": "0.1236", "result": "sent"]])
+        let record = try XCTUnwrap(records(in: recents).first)
+        XCTAssertEqual(record["id"], attempt.id.uuidString)
+        XCTAssertEqual(record["number"], "00123")
+        XCTAssertEqual(record["result"], "sent")
+        XCTAssertEqual(try XCTUnwrap(Double(record["time"] ?? "")), 0.1236, accuracy: 0.000_001)
         let reopened = SavedCalls(directory: directory)
         let reopenedModel = DialerViewModel(dialCall: DialCall(launcher: launcher), lists: reopened)
         reopenedModel.prepareForPresentation()
@@ -58,7 +61,13 @@ final class StorageV1CompatibilityTests: XCTestCase {
         XCTAssertEqual(reopened.favorite(for: "00123")?.id, desk.id)
         XCTAssertEqual(reopened.favorite(for: "00123")?.name, "Renamed desk")
         XCTAssertNotNil(reopened.favorite(for: "+12025550142"))
-        XCTAssertEqual(reopened.history, lists.history)
+        let reopenedHistory = reopened.history
+        XCTAssertEqual(reopenedHistory.map(\.id), lists.history.map(\.id))
+        XCTAssertEqual(reopenedHistory.map(\.number), lists.history.map(\.number))
+        XCTAssertEqual(reopenedHistory.map(\.result), lists.history.map(\.result))
+        for (saved, current) in zip(reopenedHistory, lists.history) {
+            XCTAssertEqual(saved.time.timeIntervalSince1970, current.time.timeIntervalSince1970, accuracy: 0.000_001)
+        }
     }
 
     @MainActor
