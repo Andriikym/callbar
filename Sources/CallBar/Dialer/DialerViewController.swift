@@ -254,7 +254,7 @@ final class DialerViewController: NSViewController, NSTextFieldDelegate {
         addFavoriteAction.isEnabled = !lists.favoritesReadFailed
         clearFavoritesAction.isEnabled = !lists.favoritesReadFailed && !favorites.isEmpty
         if let issue = lists.favoritesReadIssue {
-            showRecovery(issue.message(for: "Favorites"), focus: focus) { [weak self] in
+            showRecovery(issue.message(for: .favorites), focus: focus) { [weak self] in
                 self?.model.lists.retryFavoritesRead()
                 self?.showTab(focus: true)
             }
@@ -561,7 +561,7 @@ final class DialerViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private var historyIssue: String {
-        model.lists.historyReadIssue?.message(for: "Recents")
+        model.lists.historyReadIssue?.message(for: .recents)
             ?? "Couldn’t save changes to Recents. Retry to save your call history."
     }
 

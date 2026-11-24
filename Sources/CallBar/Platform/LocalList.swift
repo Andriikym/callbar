@@ -4,10 +4,22 @@ enum ListReadIssue: Error, Equatable {
     case unreadable
     case newerVersion(Int)
 
-    func message(for list: String) -> String {
+    func message(for list: StoredListKind) -> String {
         switch self {
-        case .unreadable: return "Couldn’t read \(list). Retry to reload the file."
-        case .newerVersion: return "A newer version of CallBar saved \(list). Update CallBar to open it."
+        case .unreadable: return "Couldn’t read \(list.displayName). Retry to reload the file."
+        case .newerVersion: return "A newer version of CallBar saved \(list.displayName). Update CallBar to open it."
+        }
+    }
+}
+
+enum StoredListKind {
+    case favorites
+    case recents
+
+    var displayName: String {
+        switch self {
+        case .favorites: return "Favorites"
+        case .recents: return "Recents"
         }
     }
 }
