@@ -24,22 +24,6 @@ enum StoredListKind {
     }
 }
 
-extension Date {
-    var roundedToMilliseconds: Date {
-        Date(timeIntervalSince1970: (timeIntervalSince1970 * 1000).rounded() / 1000)
-    }
-}
-
-private let timestampV1: DateFormatter = {
-    let formatter = DateFormatter()
-    formatter.locale = Locale(identifier: "en_US_POSIX")
-    formatter.calendar = Calendar(identifier: .gregorian)
-    formatter.timeZone = TimeZone(secondsFromGMT: 0)
-    formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
-    formatter.isLenient = false
-    return formatter
-}()
-
 private struct ListFileV1<Entry: Codable>: Codable {
     let schemaVersion: Int
     let entries: [Entry]
@@ -73,12 +57,7 @@ struct LocalList<Entry: Codable & Identifiable> {
     mutating func reload() {
         do {
             let decoder = JSONDecoder()
-            decoder.dateDecodingStrategy = .custom { decoder in
-                let text = try decoder.singleValueContainer().decode(String.self)
-                guard text.utf8.count == 24, let date = timestampV1.date(from: text),
-                      timestampV1.string(from: date) == text else { throw ListReadIssue.unreadable }
-                return date.roundedToMilliseconds
-            }
+            decoder.dateDecodingStrategy = .secondsSince1970
             let file = try decoder.decode(ListFileV1<Entry>.self, from: Data(contentsOf: url))
             try validate(file.entries)
             entries = file.entries
@@ -95,7 +74,7 @@ struct LocalList<Entry: Codable & Identifiable> {
         if let readIssue { throw readIssue }
         try validate(updated)
         let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .formatted(timestampV1)
+        encoder.dateEncodingStrategy = .secondsSince1970
         let data = try encoder.encode(ListFileV1(entries: updated))
         try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true,
                                                 attributes: [.posixPermissions: 0o700])

@@ -11,14 +11,14 @@ Version 1 starts with an empty storage directory on a fresh install. A pre-v1 de
 | `id` | UUID string identifying the favorite across edits. | UUID string identifying one attempt. Repeated attempts to the same number have distinct IDs. |
 | `number` | Canonical phone number as a JSON string. Each number appears at most once. | Canonical phone number as a JSON string, captured when the user initiates the attempt. |
 | `name` | Required display name, trimmed and nonempty. | |
-| `time` | | Required UTC timestamp of the explicit call action, rounded to the nearest millisecond. Example: `2026-11-01T12:00:00.125Z`. |
+| `time` | | Unix timestamp in seconds for the explicit call action, stored as a JSON number without app-level rounding. Example: `1793534400.125` (`2026-11-01T12:00:00.125Z`). |
 | `result` | | Required string. Allowed values are `pending`, `sent`, `noHandler`, `openFailed`, and `unknown`. |
 
 Both lists preserve an optional leading plus and all 3–15 ASCII digits, including leading zeros. IDs are unique within a list. Favorites sort by name for display. Recents stores up to 100 attempts in newest-first activation order. Array order settles ties when timestamps match. A stored `pending` from an earlier session displays as “Result unknown.” A stored `sent` records only a successful system handoff. [Number rules](architecture.md#number-handling-rules) · [Product decisions Q1–Q8](requirements.md)
 
 ## Compatibility rules
 
-1. Swift uses the stored property names on `Favorite` and `CallAttempt` as JSON keys. Those names, the result strings, and the UTC timestamp format are part of the v1 contract.
+1. Swift uses the stored property names on `Favorite` and `CallAttempt` as JSON keys. Those names, the result strings, and Unix seconds for dates (`secondsSince1970`) are part of the v1 contract.
 2. On open, identify the file version before decoding entries. A missing file starts an empty list. An unreadable file, a pre-v1 array, or an invalid v1 record puts that list in its existing recovery state and blocks writes to it. A newer version also blocks writes and tells the user which list needs a newer CallBar. Opening the other file proceeds independently.
 3. Write the current version atomically on each commit. Bump the affected file's version when the meaning changes or an older writer could discard data. For example, adding a saved note to Favorites needs a version bump if the v1 writer would drop it when renaming a favorite.
 4. Introduce the first upgrade when a real v2 format is defined. Decode the complete v1 file, convert in memory, validate every target record, then atomically replace that file. On failure, preserve the original bytes and allow retry. Opening an already current file requires no rewrite. Keep conversions within storage so a retry can never replay a call.

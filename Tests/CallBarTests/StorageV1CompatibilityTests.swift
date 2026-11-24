@@ -23,7 +23,7 @@ final class StorageV1CompatibilityTests: XCTestCase {
         await model.call()?.value
         let attempt = try XCTUnwrap(lists.history.first)
         XCTAssertEqual(try records(in: recents), [["id": attempt.id.uuidString, "number": "00123",
-                                                   "time": "1970-01-01T00:00:00.124Z", "result": "sent"]])
+                                                   "time": "0.1236", "result": "sent"]])
         let reopened = SavedCalls(directory: directory)
         let reopenedModel = DialerViewModel(dialCall: DialCall(launcher: launcher), lists: reopened)
         reopenedModel.prepareForPresentation()
@@ -101,7 +101,8 @@ final class StorageV1CompatibilityTests: XCTestCase {
         let directory = try temporaryDirectory()
         for filename in ["Favorites.json", "Recents.json"] {
             let file = directory.appendingPathComponent(filename)
-            var entries = try records(in: fixture(filename))
+            let object = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: fixture(filename))) as? [String: Any])
+            var entries = try XCTUnwrap(object["entries"] as? [[String: Any]])
             entries[1]["number"] = "00 123"
             let invalid = try JSONSerialization.data(withJSONObject: ["schemaVersion": 1, "entries": entries])
             try invalid.write(to: file)
@@ -124,7 +125,8 @@ final class StorageV1CompatibilityTests: XCTestCase {
         let json = try JSONSerialization.jsonObject(with: Data(contentsOf: file))
         let object = try XCTUnwrap(json as? [String: Any])
         XCTAssertEqual(object["schemaVersion"] as? Int, 1)
-        return try XCTUnwrap(object["entries"] as? [[String: String]])
+        let entries = try XCTUnwrap(object["entries"] as? [[String: Any]])
+        return entries.map { $0.mapValues { String(describing: $0) } }
     }
 
     private func fixture(_ name: String) -> URL {

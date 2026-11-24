@@ -146,7 +146,7 @@ final class SavedCalls {
     }
 
     func startAttempt(number: String, at time: Date) -> CallAttempt {
-        let attempt = CallAttempt(id: UUID(), number: number, time: time.roundedToMilliseconds, result: .pending)
+        let attempt = CallAttempt(id: UUID(), number: number, time: time, result: .pending)
         pendingInThisSession.insert(attempt.id)
         stage(attempt)
         return attempt
