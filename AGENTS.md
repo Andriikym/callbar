@@ -34,9 +34,10 @@ behavior. It defines the MVP boundaries and number-handling contract.
   and launch operations on MainActor.
 - A successful system URL open means only that the request was handed off.
   Do not infer connection, iPhone availability, answer, or call completion.
-- Keep entered numbers in process memory only for the MVP. Flag new number
-  logging, analytics, persistence, automatic clipboard reading, or Contacts/
-  microphone permissions unless an approved feature changes that requirement.
+- Follow the [storage and privacy requirements](docs/requirements.md#shared-behavior-and-proposals)
+  for the Dialer draft, Favorites, and Recents. Flag new number logging,
+  analytics, persistence, automatic clipboard reading, or Contacts/microphone
+  permissions unless an approved feature changes that requirement.
 
 ### Compatibility and evidence
 

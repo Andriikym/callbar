@@ -56,3 +56,5 @@ The archive contains a development build with an ad hoc signature, not a notariz
 The packaged app uses App Sandbox. It stores Favorites (names and numbers) and up to 100 recent call attempts in `~/Library/Containers/com.andriikym.callbar/Data/Library/Application Support/CallBar/`. Each attempt records the dialed number, request time, and the result of handing the number to the calling app. Failed handoffs are included. You can remove individual attempts or choose **Clear Recents**. These controls affect only CallBar’s history.
 
 The Dialer draft stays in memory. CallBar sends no analytics, keeps numbers out of diagnostic logs, and requests no access to Contacts or the microphone. It reads the clipboard only when you paste.
+
+Favorites and Recents use separate versioned JSON files. CallBar preserves an unreadable or unsupported file and shows a recovery message for that list. See the [on-disk format](docs/storage-format.md) for compatibility details.

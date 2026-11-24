@@ -84,6 +84,8 @@ The project opens in Xcode without a project generator or third-party packages. 
 
 ### Storage and privacy
 
+Each list owns its JSON schema version. A missing file starts empty. An unsupported or invalid file puts the affected list into recovery and blocks writes to it. See the [on-disk format](storage-format.md) for the v1 records and compatibility rules.
+
 Favorites and Recents use separate files in the packaged app’s sandbox container. CallBar uses Foundation to resolve the container’s Application Support directory and saves changes atomically. If a Recents write fails, the committed file is preserved and Recents shows the latest observed handoff result in the current session with an option to retry saving. Users can remove one attempt or clear the list after confirmation. The Dialer draft stays in memory. Numbers stay out of analytics and diagnostic logs. The app requires no Contacts, microphone, or Accessibility permission and reads the clipboard only when the user pastes.
 
 ### Future extensions
