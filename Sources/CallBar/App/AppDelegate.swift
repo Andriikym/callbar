@@ -7,7 +7,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         let launcher = SystemCallLauncher()
-        let model = DialerViewModel(dialCall: DialCall(launcher: launcher))
+        let directory = URL.applicationSupportDirectory.appendingPathComponent("CallBar", isDirectory: true)
+        let model = DialerViewModel(dialCall: DialCall(launcher: launcher), lists: SavedCalls(directory: directory))
         statusBarController = StatusBarController(model: model)
     }
 

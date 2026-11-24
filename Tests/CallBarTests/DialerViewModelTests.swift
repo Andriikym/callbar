@@ -22,7 +22,7 @@ final class DialerViewModelTests: XCTestCase {
     func testClearingNumberResetsDialerAfterHandoff() async {
         let model = makeModel()
         model.rawNumber = "+1 (202) 555-0147"
-        await model.call()
+        await model.call()?.value
         XCTAssertNotNil(model.notice)
         XCTAssertTrue(model.canCall)
 
@@ -41,9 +41,10 @@ final class DialerViewModelTests: XCTestCase {
         let model = makeModel(launcher: launcher)
         model.rawNumber = "+1 (202) 555-0147"
 
-        await model.call()
+        await model.call()?.value
 
         XCTAssertEqual(launcher.requests.first?.number.canonical, "+12025550147")
+        XCTAssertEqual(model.lists.history.map(\.result), [.sent])
         XCTAssertEqual(model.notice?.kind, .information)
         XCTAssertTrue(model.notice?.message.contains("+12025550147") == true)
         XCTAssertFalse(model.isOpening)
@@ -56,15 +57,16 @@ final class DialerViewModelTests: XCTestCase {
         launcher.failure = .noHandler
         let model = makeModel(launcher: launcher)
         model.rawNumber = "2025550147"
-        await model.call()
+        await model.call()?.value
 
         XCTAssertEqual(model.notice?.kind, .error)
+        XCTAssertEqual(model.lists.history.map(\.result), [.noHandler])
         XCTAssertTrue(model.canCall)
 
         model.rawNumber = "2025550148"
         XCTAssertNil(model.notice)
         launcher.failure = nil
-        await model.call()
+        await model.call()?.value
         XCTAssertEqual(model.notice?.kind, .information)
         XCTAssertEqual(launcher.requests.count, 2)
     }
@@ -75,10 +77,11 @@ final class DialerViewModelTests: XCTestCase {
         let model = makeModel(launcher: launcher)
         model.rawNumber = "123#456"
 
-        await model.call()
+        await model.call()?.value
 
         XCTAssertEqual(model.notice?.kind, .error)
         XCTAssertTrue(launcher.requests.isEmpty)
+        XCTAssertTrue(model.lists.history.isEmpty)
         XCTAssertFalse(model.isOpening)
     }
 
@@ -90,17 +93,25 @@ final class DialerViewModelTests: XCTestCase {
         launcher.onOpen = { entered.fulfill() }
         let model = makeModel(launcher: launcher)
         model.rawNumber = "2025550147"
+        XCTAssertTrue(model.lists.history.isEmpty)
 
-        let first = Task { await model.call() }
+        let first = model.call()
+        let pending = model.lists.history.first
+        XCTAssertEqual(pending?.result, .pending)
+        XCTAssertTrue(launcher.requests.isEmpty)
         await fulfillment(of: [entered], timeout: 2)
         XCTAssertTrue(model.isOpening)
         XCTAssertFalse(model.canCall)
 
-        await model.call()
+        XCTAssertNil(model.call())
         XCTAssertEqual(launcher.requests.count, 1)
 
         launcher.finish()
-        await first.value
+        await first?.value
+        XCTAssertEqual(model.lists.history.count, 1)
+        XCTAssertEqual(model.lists.history.first?.id, pending?.id)
+        XCTAssertEqual(model.lists.history.first?.time, pending?.time)
+        XCTAssertEqual(model.lists.history.first?.result, .sent)
         XCTAssertFalse(model.isOpening)
         XCTAssertTrue(model.canCall)
     }
@@ -109,14 +120,13 @@ final class DialerViewModelTests: XCTestCase {
     func testReopeningClearsNoticeButKeepsTheUnpersistedInput() async {
         let model = makeModel()
         model.rawNumber = "2025550147"
-        await model.call()
-        let previousPresentation = model.presentationID
+        await model.call()?.value
+        XCTAssertNotNil(model.notice)
 
         model.prepareForPresentation()
 
         XCTAssertEqual(model.rawNumber, "2025550147")
         XCTAssertNil(model.notice)
-        XCTAssertGreaterThan(model.presentationID, previousPresentation)
     }
 
     @MainActor
@@ -141,7 +151,7 @@ final class DialerViewModelTests: XCTestCase {
         let launcher = ControllableLauncher()
         let model = makeModel(launcher: launcher)
         model.rawNumber = "2025550147"
-        await model.call()
+        await model.call()?.value
         XCTAssertEqual(model.notice?.kind, .information)
 
         model.rawNumber = "12"
@@ -169,14 +179,14 @@ final class DialerViewModelTests: XCTestCase {
             let model = makeModel(launcher: launcher)
             model.rawNumber = "2025550147"
 
-            await model.call()
+            await model.call()?.value
             XCTAssertEqual(model.notice?.kind, .error)
             XCTAssertEqual(model.notice?.message, failure.localizedDescription)
             XCTAssertFalse(model.isOpening)
             XCTAssertTrue(model.canCall)
 
             launcher.failure = nil
-            await model.call()
+            await model.call()?.value
             XCTAssertEqual(model.notice?.kind, .information)
             XCTAssertFalse(model.isOpening)
             XCTAssertEqual(launcher.requests.count, 2)
@@ -194,21 +204,19 @@ final class DialerViewModelTests: XCTestCase {
         let model = makeModel(launcher: launcher)
         model.rawNumber = "2025550147"
 
-        let first = Task { await model.call() }
+        let first = model.call()
         await fulfillment(of: [entered], timeout: 2)
-        let previousPresentation = model.presentationID
 
         model.prepareForPresentation()
-        XCTAssertGreaterThan(model.presentationID, previousPresentation)
         XCTAssertEqual(model.rawNumber, "2025550147")
         XCTAssertTrue(model.isOpening)
         XCTAssertFalse(model.canCall)
         XCTAssertNil(model.notice)
-        await model.call()
+        XCTAssertNil(model.call())
         XCTAssertEqual(launcher.requests.count, 1)
 
         launcher.finish()
-        await first.value
+        await first?.value
         XCTAssertEqual(model.notice?.kind, .error)
         XCTAssertFalse(model.isOpening)
         XCTAssertTrue(model.canCall)
@@ -216,19 +224,22 @@ final class DialerViewModelTests: XCTestCase {
         launcher.shouldWait = false
         launcher.failure = nil
         launcher.onOpen = nil
-        await model.call()
+        await model.call()?.value
         XCTAssertEqual(model.notice?.kind, .information)
         XCTAssertEqual(launcher.requests.count, 2)
     }
 
     @MainActor
     private func makeModel(launcher: ControllableLauncher? = nil) -> DialerViewModel {
-        DialerViewModel(dialCall: DialCall(launcher: launcher ?? ControllableLauncher()))
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        addTeardownBlock { try? FileManager.default.removeItem(at: directory) }
+        return DialerViewModel(dialCall: DialCall(launcher: launcher ?? ControllableLauncher()),
+                              lists: SavedCalls(directory: directory))
     }
 }
 
 @MainActor
-private final class ControllableLauncher: CallLaunching {
+final class ControllableLauncher: CallLaunching {
     var requests: [CallRequest] = []
     var failure: CallLaunchError?
     var shouldWait = false

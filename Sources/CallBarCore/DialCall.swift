@@ -14,7 +14,11 @@ public struct DialCall {
 
     @discardableResult
     public func start(rawNumber: String) async throws -> PhoneNumber {
-        let request = try CallRequest(rawNumber: rawNumber)
+        try await start(CallRequest(rawNumber: rawNumber))
+    }
+
+    @discardableResult
+    public func start(_ request: CallRequest) async throws -> PhoneNumber {
         try await launcher.open(request)
         return request.number
     }

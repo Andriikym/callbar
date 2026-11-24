@@ -36,6 +36,8 @@ Complete with verified details before calling the MVP ready:
 | Disable Calls on Other Devices | macOS handles the connection error; CallBar does not show a false connection status |
 | Choose a third-party tel: handler | The request follows macOS settings, as documented |
 | Open help and return | The guide is readable and the field is available afterward |
+| Open Recents with two attempts to the same number. Select Remove, press Esc, then reopen and confirm | The confirmation shows the number and request time with Cancel as the default. Esc keeps both rows. Confirm removes only the selected attempt |
+| Choose Clear Recents, cancel once, then confirm and relaunch | The confirmation shows the count. Cancel keeps the rows. Confirm clears Recents across restarts and preserves Favorites |
 | Check VoiceOver and dark mode | Field and buttons have clear labels; text is readable |
 | Choose Quit CallBar | The icon disappears and the process exits |
 
