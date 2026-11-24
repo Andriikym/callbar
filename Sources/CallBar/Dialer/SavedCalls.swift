@@ -146,6 +146,7 @@ final class SavedCalls {
     }
 
     func removeAttempts(ids: Set<UUID>) throws {
+        guard !historyReadFailed else { throw CocoaError(.fileReadUnknown) }
         let remaining = historyStore.entries.filter { !ids.contains($0.id) }
         if remaining.count != historyStore.entries.count { try historyStore.commit(remaining) }
         unsavedAttempts.removeAll { ids.contains($0.id) }

@@ -18,8 +18,9 @@ final class FavoritesAcceptanceTests: XCTestCase {
 
         app.open(2)
         XCTAssertTrue(labels(in: app.view).contains("No favorites yet"))
-        XCTAssertFalse(try button("Clear Favorites", in: app.view).isEnabled)
-        try button("Add favorite", in: app.view).performClick(nil)
+        XCTAssertTrue(labels(in: app.view).contains("Use the ⋯ menu to add a favorite."))
+        XCTAssertFalse(try app.menuItem("Clear Favorites…").isEnabled)
+        try app.chooseAction("Add Favorite…")
         let blank = try XCTUnwrap(views(FavoriteEditorView.self, in: app.view).first)
         XCTAssertTrue(blank.nameField.stringValue.isEmpty)
         XCTAssertTrue(blank.numberField.stringValue.isEmpty)
@@ -49,7 +50,7 @@ final class FavoritesAcceptanceTests: XCTestCase {
         app.controller.cancelOperation(nil)
 
         app.open(2)
-        try button("Add favorite", in: app.view).performClick(nil)
+        try app.chooseAction("Add Favorite…")
         let duplicate = try XCTUnwrap(views(FavoriteEditorView.self, in: app.view).first)
         duplicate.nameField.stringValue = "Reception"
         duplicate.numberField.stringValue = "020 123 4567"
@@ -147,22 +148,34 @@ final class FavoritesAcceptanceTests: XCTestCase {
 
         _ = try app.model.lists.saveFavorite(id: nil, name: "Same building", rawNumber: "0201234560")
         app.open(2)
-        try button("Clear Favorites", in: app.view).performClick(nil)
+        try app.chooseAction("Clear Favorites…")
+        XCTAssertTrue(labels(in: app.view).contains("Clear Favorites?"))
         XCTAssertTrue(labels(in: app.view).contains("Remove 2 saved favorites from Favorites."))
+        XCTAssertEqual(try button("Cancel", in: app.view).keyEquivalent, "\r")
         try button("Cancel", in: app.view).performClick(nil)
         XCTAssertEqual(app.model.lists.favorites.count, 2)
-        try button("Clear Favorites", in: app.view).performClick(nil)
+        try app.chooseAction("Clear Favorites…")
         let restore = try blockWrites(to: app.directory.appendingPathComponent("Favorites.json"))
         try button("Clear Favorites", in: app.view).performClick(nil)
         XCTAssertEqual(app.model.lists.favorites.count, 2)
         try restore()
+        XCTAssertEqual(SavedCalls(directory: app.directory).favorites, app.model.lists.favorites)
         try button("Retry", in: app.view).performClick(nil)
         XCTAssertTrue(labels(in: app.view).contains("No favorites yet"))
-        XCTAssertFalse(try button("Clear Favorites", in: app.view).isEnabled)
+        XCTAssertFalse(try app.menuItem("Clear Favorites…").isEnabled)
+        XCTAssertTrue(try app.menuItem("Add Favorite…").isEnabled)
         let reopened = SavedCalls(directory: app.directory)
         XCTAssertTrue(reopened.favorites.isEmpty)
         XCTAssertEqual(reopened.history.map(\.id), [attempt.id])
         XCTAssertEqual(app.model.rawNumber, first.number)
+
+        let last = try app.model.lists.saveFavorite(id: nil, name: "Last favorite", rawNumber: first.number)
+        app.open(2)
+        try button("Remove \(last.name), \(last.number)", in: app.view).performClick(nil)
+        try button("Remove", in: app.view).performClick(nil)
+        XCTAssertTrue(labels(in: app.view).contains("Use the ⋯ menu to add a favorite."))
+        XCTAssertTrue(try app.menuItem("Add Favorite…").isEnabled)
+        XCTAssertFalse(try app.menuItem("Clear Favorites…").isEnabled)
         XCTAssertTrue(app.launcher.requests.isEmpty)
     }
 
@@ -222,12 +235,15 @@ final class FavoritesAcceptanceTests: XCTestCase {
         reopened.open(2)
         XCTAssertTrue(reopened.model.lists.favoritesReadFailed)
         XCTAssertFalse(labels(in: reopened.view).contains("No favorites yet"))
-        XCTAssertFalse(views(NSButton.self, in: reopened.view).contains { $0.title == "Add favorite" })
+        XCTAssertFalse(try reopened.menuItem("Add Favorite…").isEnabled)
+        XCTAssertFalse(try reopened.menuItem("Clear Favorites…").isEnabled)
         try button("Retry", in: reopened.view).performClick(nil)
         XCTAssertEqual(try Data(contentsOf: file), corrupt)
         try data.write(to: file)
         try button("Retry", in: reopened.view).performClick(nil)
         XCTAssertEqual(reopened.model.lists.favorites.first?.name, "Front desk")
+        XCTAssertTrue(try reopened.menuItem("Add Favorite…").isEnabled)
+        XCTAssertTrue(try reopened.menuItem("Clear Favorites…").isEnabled)
     }
 
     @MainActor
@@ -237,7 +253,7 @@ final class FavoritesAcceptanceTests: XCTestCase {
         let favorite = try lists.saveFavorite(id: nil, name: "Front desk", rawNumber: "0201234567")
         let phone = try XCTUnwrap(views(NSTextField.self, in: app.view).first { $0.isEditable })
         phone.stringValue = "5551234"
-        let time = Date()
+        let time = try XCTUnwrap(Calendar.current.date(byAdding: .day, value: -1, to: Date()))
         let first = lists.startAttempt(number: favorite.number, at: time)
         lists.finishAttempt(first, with: .sent)
         let second = lists.startAttempt(number: favorite.number, at: time)
@@ -259,15 +275,133 @@ final class FavoritesAcceptanceTests: XCTestCase {
         try button("Retry", in: app.view).performClick(nil)
         XCTAssertEqual(SavedCalls(directory: app.directory).history.map(\.id), [first.id])
 
+        let newer = lists.startAttempt(number: "5554321", at: Date())
+        lists.finishAttempt(newer, with: .noHandler)
+        app.open(1)
+        XCTAssertTrue(labels(in: app.view).contains("Today"))
+        XCTAssertTrue(labels(in: app.view).contains("Yesterday"))
+        try app.chooseAction("Clear Recents…")
+        XCTAssertTrue(labels(in: app.view).contains("Clear Recents?"))
+        XCTAssertTrue(labels(in: app.view).contains("Remove 2 call attempts from Recents."))
+        XCTAssertEqual(try button("Cancel", in: app.view).keyEquivalent, "\r")
+        app.controller.cancelOperation(nil)
+        XCTAssertEqual(lists.history.map(\.id), [newer.id, first.id])
+
+        try app.chooseAction("Clear Recents…")
+        let restoreClear = try blockWrites(to: app.directory.appendingPathComponent("Recents.json"))
         try button("Clear Recents", in: app.view).performClick(nil)
-        XCTAssertTrue(labels(in: app.view).contains("Remove 1 call attempt from Recents."))
-        try button("Clear Recents", in: app.view).performClick(nil)
-        XCTAssertFalse(try button("Clear Recents", in: app.view).isEnabled)
+        XCTAssertEqual(lists.history.map(\.id), [newer.id, first.id])
+        try restoreClear()
+        XCTAssertEqual(SavedCalls(directory: app.directory).history, lists.history)
+        try button("Retry", in: app.view).performClick(nil)
+        XCTAssertFalse(try app.menuItem("Clear Recents…").isEnabled)
         let reopened = SavedCalls(directory: app.directory)
         XCTAssertTrue(reopened.history.isEmpty)
         XCTAssertEqual(reopened.favorites, [favorite])
         XCTAssertEqual(app.model.rawNumber, "5551234")
         XCTAssertTrue(app.launcher.requests.isEmpty)
+    }
+
+    @MainActor
+    func testTabActionsMenuContentsAndPlacement() async throws {
+        let app = fixture()
+        XCTAssertTrue(views(ListActionsButton.self, in: app.view).isEmpty)
+        for (tab, label) in [(1, "Recents actions"), (2, "Favorites actions")] {
+            app.open(tab)
+            let actions = try XCTUnwrap(views(ListActionsButton.self, in: app.view).first)
+            XCTAssertEqual(actions.accessibilityLabel(), label)
+            XCTAssertEqual(actions.accessibilityRole(), .menuButton)
+            XCTAssertTrue(actions.isEnabled)
+            let menu = try XCTUnwrap(actions.menu)
+            XCTAssertEqual(menu.items.map { $0.isSeparatorItem ? "separator" : $0.title },
+                           tab == 1 ? ["Clear Recents…"] : ["Add Favorite…", "separator", "Clear Favorites…"])
+            XCTAssertFalse(try app.menuItem(tab == 1 ? "Clear Recents…" : "Clear Favorites…").isEnabled)
+            if tab == 2 { XCTAssertTrue(try app.menuItem("Add Favorite…").isEnabled) }
+            XCTAssertFalse(views(NSButton.self, in: app.view).contains {
+                ["Clear Recents", "Clear Favorites", "Add favorite"].contains($0.title)
+            })
+        }
+        let earlier = Date(timeIntervalSinceNow: -86_400)
+        for index in 0..<12 {
+            let number = "55501\(String(format: "%02d", index))"
+            _ = try app.model.lists.saveFavorite(id: nil, name: "Test \(index)", rawNumber: number)
+            let attempt = app.model.lists.startAttempt(number: number, at: index < 6 ? earlier : Date())
+            app.model.lists.finishAttempt(attempt, with: .sent)
+        }
+        for tab in [1, 2] {
+            app.open(tab)
+            app.view.layoutSubtreeIfNeeded()
+            let actions = try XCTUnwrap(views(ListActionsButton.self, in: app.view).first)
+            let scroll = try XCTUnwrap(views(NSScrollView.self, in: app.view).first)
+            let frame = actions.convert(actions.bounds, to: app.view)
+            let tabFrame = app.tabs.convert(app.tabs.bounds, to: app.view)
+            XCTAssertGreaterThanOrEqual(frame.minY, tabFrame.maxY)
+            XCTAssertEqual(frame.maxX, tabFrame.maxX, accuracy: 1)
+            XCTAssertFalse(actions.isDescendant(of: scroll))
+            XCTAssertLessThan(tabFrame.minY - scroll.convert(scroll.bounds, to: app.view).maxY, 16)
+            scroll.contentView.scroll(to: NSPoint(x: 0, y: 100))
+            scroll.reflectScrolledClipView(scroll.contentView)
+            XCTAssertGreaterThan(scroll.contentView.bounds.minY, 0)
+            XCTAssertEqual(actions.convert(actions.bounds, to: app.view), frame)
+        }
+        app.open(0)
+        XCTAssertTrue(views(ListActionsButton.self, in: app.view).isEmpty)
+        XCTAssertTrue(app.launcher.requests.isEmpty)
+    }
+
+    @MainActor
+    func testRecentsClearMenuSuppressesPendingResultAndPreservesUnconfirmedAttempts() async throws {
+        let app = fixture()
+        app.launcher.shouldWait = true
+        let opened = expectation(description: "Pending handoff reached the stub")
+        app.launcher.onOpen = { opened.fulfill() }
+        app.model.rawNumber = "5550100"
+        let task = try XCTUnwrap(app.model.call())
+        await fulfillment(of: [opened], timeout: 2)
+        defer { app.launcher.finish() }
+        app.open(1)
+        try app.chooseAction("Clear Recents…")
+        XCTAssertTrue(labels(in: app.view).contains("Remove 1 call attempt from Recents."))
+
+        let unconfirmed = app.model.lists.startAttempt(number: "5550101", at: Date())
+        app.model.lists.finishAttempt(unconfirmed, with: .openFailed)
+        try button("Clear Recents", in: app.view).performClick(nil)
+        app.launcher.finish()
+        await task.value
+        app.model.lists.retryHistory()
+        XCTAssertEqual(SavedCalls(directory: app.directory).history.map(\.id), [unconfirmed.id])
+        XCTAssertEqual(app.model.lists.history.map(\.id), [unconfirmed.id])
+        XCTAssertEqual(app.launcher.requests.count, 1)
+
+        app.launcher.shouldWait = false
+        app.launcher.onOpen = nil
+        app.model.rawNumber = "5550102"
+        await app.model.call()?.value
+        XCTAssertEqual(SavedCalls(directory: app.directory).history.map(\.number), ["5550102", "5550101"])
+        XCTAssertEqual(app.launcher.requests.map(\.number.canonical), ["5550100", "5550102"])
+    }
+
+    @MainActor
+    func testRecentsReadRecoveryDisablesClearMenuAction() async throws {
+        let app = fixture()
+        let attempt = app.model.lists.startAttempt(number: "5550100", at: Date())
+        app.model.lists.finishAttempt(attempt, with: .sent)
+        let file = app.directory.appendingPathComponent("Recents.json")
+        let contents = try Data(contentsOf: file)
+        let corrupt = Data("invalid JSON".utf8)
+        try corrupt.write(to: file)
+        let reopened = fixture(directory: app.directory)
+        reopened.open(1)
+        XCTAssertFalse(try reopened.menuItem("Clear Recents…").isEnabled)
+        XCTAssertFalse(labels(in: reopened.view).contains("Calls started from CallBar appear here."))
+        try button("Retry", in: reopened.view).performClick(nil)
+        XCTAssertEqual(try Data(contentsOf: file), corrupt)
+        XCTAssertTrue(reopened.model.lists.historyReadFailed)
+        try contents.write(to: file)
+        try button("Retry", in: reopened.view).performClick(nil)
+        XCTAssertTrue(try reopened.menuItem("Clear Recents…").isEnabled)
+        XCTAssertEqual(reopened.model.lists.history.map(\.id), [attempt.id])
+        XCTAssertTrue(reopened.launcher.requests.isEmpty)
     }
 
     @MainActor
@@ -343,6 +477,20 @@ private struct Fixture {
     func open(_ index: Int) {
         tabs.selectedSegment = index
         tabs.sendAction(tabs.action, to: tabs.target)
+    }
+
+    func menuItem(_ title: String) throws -> NSMenuItem {
+        let chrome = try XCTUnwrap(tabs.superview as? NSStackView)
+        let header = try XCTUnwrap(chrome.arrangedSubviews.first as? NSStackView)
+        let actions = try XCTUnwrap(header.arrangedSubviews.compactMap { $0 as? ListActionsButton }.first)
+        return try XCTUnwrap(actions.menu?.item(withTitle: title), title)
+    }
+
+    func chooseAction(_ title: String) throws {
+        let item = try menuItem(title)
+        XCTAssertTrue(item.isEnabled)
+        let menu = try XCTUnwrap(item.menu)
+        menu.performActionForItem(at: menu.index(of: item))
     }
 }
 
